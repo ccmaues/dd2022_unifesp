@@ -19,7 +19,13 @@ saveRDS(dic, glue("{obj_dir}/cass_BHRC_dict_of_var.RDS"))
 ## Get genotyped samples IDs:
 n_to_use <- data.table::fread(
     glue("{ext_dir}/BHRC_Probands_Final.fam")
-    )
+    ) %>%
+    rename(IID = V2, sex = V5) %>%
+    select(IID, sex)
+
+n_to_use$sex <- factor(ifelse(n_to_use$sex == 2, "Female", "Male"))
+
+saveRDS(n_to_use, glue("{obj_dir}/cass_BHRC_sex.RDS"))
 
 ## Phenotype status per sample
 phenotype <- readRDS(
@@ -31,7 +37,7 @@ phenotype <- readRDS(
         wave = gsub("wave2_arm_1", "W2", wave),
         IID = gsub("^", "C", IID)
     )
-phenotype <- filter(phenotype, IID %in% n_to_use$V2) # Select rows
+phenotype <- filter(phenotype, IID %in% n_to_use$IID) # Select rows
 saveRDS(phenotype, glue("{obj_dir}/cass_BHRC_phenotype.RDS"))
 
 ## Ancestry data per sample:
@@ -40,6 +46,7 @@ admixture <- read.table(
     header = FALSE)[, -c(6:9)]
 colnames(admixture) <- c("AMR", "AFR", "EUR", "popID", "IID")
 filtered_admixture <- subset(admixture, popID %in% c("BRA_RS", "BRA_SP"))
+filtered_admixture$popID <- factor(filtered_admixture$popID)
 saveRDS(filtered_admixture, glue("{obj_dir}/cass_BHRC_ADMIXTURE.RDS"))
 
 ## Ages at each wave
@@ -51,8 +58,7 @@ ages <- readxl::read_excel(
         W0_Age = round(W0_Age),
         W1_Age = round(W1_Age),
         W2_Age = round(W2_Age)
-    ) %>%
-    na.exclude()
+    )
 saveRDS(ages, glue("{obj_dir}/cass_BHRC_ages.RDS"))
 
 ## Principal Components calculated REFAZER COM NOVO QC
