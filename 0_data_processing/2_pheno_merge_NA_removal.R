@@ -109,4 +109,11 @@ new_adhd <- list(
     dcadhdc = process_data(adhd$dcadhdc)
 )
 
+new_adhd <- lapply(new_adhd, function(df_column) {
+  mutate(df_column,
+    W0 = factor(case_when(W0 == "2" ~ "Case", W0 == "0" ~ "Control")),
+    W1 = factor(case_when(W1 == "2" ~ "Case", W1 == "0" ~ "Control")),
+    W2 = factor(case_when(W2 == "2" ~ "Case", W2 == "0" ~ "Control")))
+})
+
 saveRDS(new_adhd, glue("{obj_dir}/cass_BHRC_ADHD_mod_pheno.RDS"))
