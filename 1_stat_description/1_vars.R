@@ -1,14 +1,13 @@
 setwd("F:/")
 pacman::p_load(psych, dplyr, glue, ggplot2, ggthemr, tidyr, patchwork)
 
-ext_dir <- "F:/1_stat_description"
 obj_dir <- "F:/objects_R"
 plot_dir <- "F:/plots_R"
 tables_dir <- "F:/tables_R"
 
 vars <- readRDS(glue("{obj_dir}/cass_BHRC_ADHD_data.RDS"))
-
 ggthemr("fresh")
+
 ## PRS data
 # PRSice2
 qqplot1 <- ggplot(vars, aes(sample = PRSice2)) +
@@ -19,7 +18,7 @@ qqplot1 <- ggplot(vars, aes(sample = PRSice2)) +
         ) +
     labs(
         title = "PRSice2 ADHD",
-        x = "Theoretical Quantiles (Standard Normal)",
+        x = "Theoretical Quantiles",
         y = "Observed Quantiles"
     )
 dPRSice2 <- describe(vars$PRSice2)
@@ -39,7 +38,7 @@ qqplot2 <- ggplot(vars, aes(sample = PRSCS)) +
         ) +
     labs(
         title = "PRSCS ADHD",
-        x = "Theoretical Quantiles (Standard Normal)",
+        x = "Theoretical Quantiles",
         y = "Observed Quantiles"
     )
 dPRSCS <- describe(vars$PRSCS)
@@ -50,62 +49,42 @@ rPRSCS <- data.frame(Statistic = tPRSCS$statistic,
                     method = "Anderson-Darling Test",
                     row.names = "PRSCS")
 
-# Save output
-rbind(rPRSice2, rPRSCS) %>%
-#    knitr::kable(format = "markdown", row.names = TRUE) %>%
-    data.table::fwrite(
-        glue("{tables_dir}/cass_normalityTest_PRS_noChange.tsv"),
-        sep = "\t",
-        row.names = TRUE
-    )
-rbind(dPRSice2, dPRSCS) %>%
-#    knitr::kable(format = "markdown", row.names = TRUE) %>%
-    data.table::fwrite(
-        glue("{tables_dir}/cass_description_PRS_noChange.tsv"),
-        sep = "\t",
-        row.names = TRUE
-    )
-qqplot <- qqplot1 + qqplot2
+# Save PRS output
+norm_test_PRS <- rbind(rPRSice2, rPRSCS)
+data.table::fwrite(
+    norm_test_PRS,
+    glue("{tables_dir}/cass_normalityTest_PRS_noChange.tsv"),
+    sep = "\t",
+    row.names = TRUE
+)
+desc_PRS <- rbind(dPRSice2, dPRSCS)
+data.table::fwrite(
+    desc_PRS,
+    glue("{tables_dir}/cass_description_PRS_noChange.tsv"),
+    sep = "\t",
+    row.names = TRUE
+)
+qqplot_PRS <- qqplot1 + qqplot2
 ggsave(
     glue("{plot_dir}/cass_PRS_qqplot_noChange.png"),
-    qqplot,
+    qqplot_PRS,
     height = 15,
     width = 25,
     unit = "cm")
 
 ## ADHD phenotype
-as.data.frame(table(vars$W0)) %>%
-    rename(., "Phenotype" = Var1, "N" = Freq) %>%
-    knitr::kable()
-as.data.frame(table(vars$W1)) %>%
-    rename(., "Phenotype" = Var1, "N" = Freq) %>%
-    knitr::kable()
-as.data.frame(table(vars$W2)) %>%
-    rename(., "Phenotype" = Var1, "N" = Freq) %>%
-    knitr::kable()
+n1 <- as.data.frame(table(vars$W0)) %>%
+    rename(., "Phenotype" = Var1, "W0" = Freq)
+n2 <- as.data.frame(table(vars$W1)) %>%
+    rename(., "Phenotype" = Var1, "W1" = Freq)
+n3 <- as.data.frame(table(vars$W2)) %>%
+    rename(., "Phenotype" = Var1, "W2" = Freq)
 
-## Sex
-as.data.frame(table(vars$sex)) %>%
-    rename(., "Sex" = Var1, "N" = Freq) %>%
-    knitr::kable()
+# Save adhd output
+adhd_desc <- plyr::join_all(list(n1, n2, n3), type = "inner", by = "Phenotype")
 
-## Age
-as.data.frame(table(vars$W0_Age)) %>%
-    rename(., "Age" = Var1, "N" = Freq) %>%
-    knitr::kable()
-as.data.frame(table(vars$W1_Age)) %>%
-    rename(., "Age" = Var1, "N" = Freq) %>%
-    knitr::kable()
-as.data.frame(table(vars$W2_Age)) %>%
-    rename(., "Age" = Var1, "N" = Freq) %>%
-    knitr::kable()
-
-## State
-as.data.frame(table(vars$popID)) %>%
-    rename(., "State" = Var1, "N" = Freq) %>%
-    knitr::kable()
-
-## Ancestrality
-describe(vars$AMR) %>% knitr::kable()
-describe(vars$AFR) %>% knitr::kable()
-describe(vars$EUR) %>% knitr::kable()
+data.table::fwrite(
+    adhd_desc,
+    glue("{tables_dir}/cass_nTime_ADHD.tsv"),
+    sep = "\t"
+)
