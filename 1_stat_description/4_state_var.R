@@ -5,16 +5,16 @@ obj_dir <- "F:/objects_R"
 plot_dir <- "F:/plots_R"
 tables_dir <- "F:/tables_R"
 
-vasc <- readRDS(glue("{obj_dir}/cass_BHRC_ADHD_data.RDS"))
+vars <- readRDS(glue("{obj_dir}/cass_BHRC_ADHD_data.RDS"))
 ggthemr("fresh")
 
 ## State
-sp <- filter(vasc, popID == "BRA_SP") %>%
+sp <- filter(vars, popID == "BRA_SP") %>%
     select(PRSice2, PRSCS)
-sc <- filter(vasc, popID == "BRA_sc") %>%
+sc <- filter(vars, popID == "BRA_sc") %>%
     select(PRSice2, PRSCS)
 
-n_state <- as.data.frame(table(vasc$popID)) %>%
+n_state <- as.data.frame(table(vars$popID)) %>%
     rename("State" = Var1, "N" = Freq)
 
 data.table::fwrite(
