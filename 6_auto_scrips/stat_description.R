@@ -1,27 +1,25 @@
 #!/usr/bin/env Rscript
 library(docopt)
 library(glue)
+library(dplyr)
 doc <- "
 Usage:
-  my_script.R [--input FILE] [--tool TOOL] [--output FILE] [--var-path FILE]
+  my_script.R [--input FILE] [--output FILE] [--pheno FILE] [--vars FILE]
 
 Options:
   -i, --input FILE         # PRS file with scores [ file.profile | file.all_score ]
-  -t, --tool TOOL          # Type of tool used [ PRSice2 | PRSCS ]
   -o, --output FILE        # Output file names
-  -p, --var-path FILE      # RDS file with variables [ file.RDS ]
-  -v, --vars               # Column names to be used in file.RDS [ var1,var2,var3 ] 
+  -p, --pheno FILE         # RDS file with variables [ file.RDS ]
+  -v, --vars FILE          # Column names to be used in file.RDS [ var1,var2,var3 ] 
 "
 
 args <- docopt(doc)
 input <- args[["--input"]]
-tool <- args[["--tool"]]
 output <- args[["--output"]]
-var_path <- args[["--var-path"]]
+pheno <- args[["--pheno"]]
 vars <- args[["--vars"]]
 
 vars <- unlist(strsplit(vars, ","))
-
 # message("
 # ------------------------------
 # Loading necessary packages...
@@ -33,16 +31,20 @@ vars <- unlist(strsplit(vars, ","))
 #     ) # add ggthemr later
 
 message(glue("This is the {input} file"))
-message(glue("This is the {tool} file"))
 message(glue("This is the {output} file"))
-message(glue("This is the {var_path} path"))
+message(glue("This is the {pheno} path"))
 message(glue("This is the {vars} path"))
 
-#variables <- readRDS(glue("{var}"))
-#ggthemr("fresh")
+variables <- readRDS(input)
+for_use <- select(variables, all_of(vars))
 
 ## Count N in var
+lapply(vars, function(col_name) {
+  as.data.frame(table(for_use[[col_name]])) %>%
+  rename(!!col_name := Freq)
+})
 
 ## Test normality
 
 ## Make plots
+#ggthemr("fresh")
