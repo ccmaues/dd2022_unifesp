@@ -39,12 +39,38 @@ variables <- readRDS(input)
 for_use <- select(variables, all_of(vars))
 
 ## Count N in var
-lapply(vars, function(col_name) {
-  as.data.frame(table(for_use[[col_name]])) %>%
-  rename(!!col_name := Freq)
+result_list <- lapply(vars, function(col_name) {
+  opt <- as.data.frame(table(for_use[[col_name]])) %>%
+    rename(!!col_name := Freq)
+  opt
 })
+plyr::join_all(result_list, by = "Var1", type = "inner") %>%
+  rename(Type = Var1) %>%
+  data.table::fwrite(.,
+    glue("{output}.tsv",
+    quote = FALSE, sep = "\t",
+    row.names = FALSE, col.names = TRUE))
+
+if (file.exists(glue("{output}.tsv"))) {
+  message("
+  First file written
+  ")
+} else {
+  message("
+  Problem with writting the N file...
+  ")
+}
 
 ## Test normality
+norm_test <- select_if(for_use, is.numeric)
+if (ncol(norm_test) != 0) {
+  message("make norm test")
+} else {
+  message("
+  Given variables are not numeric.
+  No necessity for normality test...
+  ")
+}
 
 ## Make plots
 #ggthemr("fresh")
