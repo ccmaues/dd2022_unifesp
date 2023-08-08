@@ -78,23 +78,19 @@ if (str_detect(file_name, "_Score.profile")) {
     gsub(".all_score", "", .)
 } else {
   name <- "NAME"
-  message("
-  Not able to identify the file name type... Using default.
-  ")
+  # message("
+  # Not able to identify the file name type... Using default.
+  # ")
 }
 
 num_test <- select_if(for_use, is.numeric)
 if (ncol(num_test) != 0) {
-  message("
-  making norm test with the given variables...
-  ")
+  # message("
+  # making norm test with the given variables...
+  # ")
   lapply(vars, function(col_name) {
     d <- describe(for_use[[col_name]])
     rownames(d) <- name
-    data.table::fwrite(d,
-    glue("{output}_describe.tsv",
-    quote = FALSE, sep = "\t",
-    row.names = TRUE, col.names = TRUE))
     t <- nortest::ad.test(for_use[[col_name]])
     r <- data.frame(
       Statistic = t$statistic,
@@ -111,10 +107,7 @@ if (ncol(num_test) != 0) {
     #   Problem with writting the describe file...
     #   ")
     # }
-    data.table::fwrite(r,
-    glue("{output}_norm_test.tsv",
-    quote = FALSE, sep = "\t",
-    row.names = TRUE, col.names = TRUE))
+
     # if (file.exists(glue("{output}_norm_test.tsv"))) {
     #   message("
     #   Norm test file written.
@@ -133,7 +126,24 @@ if (ncol(num_test) != 0) {
   norm_test <- select(variables, IID, all_of(vars)) %>%
     inner_join(., prs_values, by = "IID") %>%
     select(., all_of(vars), PRS)
-  lapply(vars, function(col_name) { # MUDAR AQUI PARA PEGAR OS FATORES E FAZER O TROÇO
+
+    subset_dfs <- list()
+    for (i in 1:ncol(norm_test)) {
+      if (names(norm_test)[i] != "PRS") {
+        col_name <- names(norm_test)[i]
+        fcolumn <- levels(norm_test[[i]])
+        nlevels <- nlevels(norm_test[[i]])
+        for_sep <- data.frame(norm_test[[i]], norm_test[["PRS"]])
+        colnames(for_sep) <- c(col_name, "PRS")
+        for (level in nlevels) {
+          subset_data <- group_split(for_sep, {{ col_name }})
+          print(level)
+          print(head(subset_data))
+          new_df_name <- paste(col_name, level, sep = "_")
+          subset_dfs[[new_df_name]] <- subset_data
+        }
+      }
+    }
     d <- describe(norm_test[[col_name]])
     rownames(d) <- name
     d
@@ -148,8 +158,14 @@ if (ncol(num_test) != 0) {
       Method = "Anderson-Darling Test",
       row.names = name
     )
-  })
 }
-
+data.table::fwrite(d,
+glue("{output}_describe.tsv",
+quote = FALSE, sep = "\t",
+row.names = TRUE, col.names = TRUE))
+data.table::fwrite(r,
+glue("{output}_norm_test.tsv",
+quote = FALSE, sep = "\t",
+row.names = TRUE, col.names = TRUE))
 ## Make plots
 #ggthemr("fresh")
