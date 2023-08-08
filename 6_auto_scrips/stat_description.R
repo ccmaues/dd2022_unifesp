@@ -126,13 +126,11 @@ if (ncol(num_test) != 0) {
   norm_test <- select(variables, IID, all_of(vars)) %>%
     inner_join(., prs_values, by = "IID") %>%
     select(., all_of(vars), PRS)
-
     subset_dfs <- list()
     for (i in 1:ncol(norm_test)) {
       if (names(norm_test)[i] != "PRS") {
         col_name <- names(norm_test)[i]
         fcolumn <- levels(norm_test[[i]])
-        nlevels <- nlevels(norm_test[[i]])
         for_sep <- data.frame(norm_test[[i]], norm_test[["PRS"]])
         colnames(for_sep) <- c(col_name, "PRS")
         for (level in nlevels) {
@@ -144,13 +142,10 @@ if (ncol(num_test) != 0) {
         }
       }
     }
+    # FALTA COLOCAR OS RESULTADOS ASSOCIADOS NO
+    # MESMO OBJETO CASO TENHA MAIS DE UM
     d <- describe(norm_test[[col_name]])
     rownames(d) <- name
-    d
-    # data.table::fwrite(d,
-    # glue("{output}_describe.tsv",
-    # quote = FALSE, sep = "\t",
-    # row.names = TRUE, col.names = TRUE))
     t <- nortest::ad.test(norm_test[[col_name]])
     r <- data.frame(
       Statistic = t$statistic,
@@ -158,14 +153,15 @@ if (ncol(num_test) != 0) {
       Method = "Anderson-Darling Test",
       row.names = name
     )
+    data.table::fwrite(d,
+    glue("{output}_describe.tsv",
+    quote = FALSE, sep = "\t",
+    row.names = TRUE, col.names = TRUE))
+    data.table::fwrite(r,
+    glue("{output}_norm_test.tsv",
+    quote = FALSE, sep = "\t",
+    row.names = TRUE, col.names = TRUE))
 }
-data.table::fwrite(d,
-glue("{output}_describe.tsv",
-quote = FALSE, sep = "\t",
-row.names = TRUE, col.names = TRUE))
-data.table::fwrite(r,
-glue("{output}_norm_test.tsv",
-quote = FALSE, sep = "\t",
-row.names = TRUE, col.names = TRUE))
+
 ## Make plots
 #ggthemr("fresh")
