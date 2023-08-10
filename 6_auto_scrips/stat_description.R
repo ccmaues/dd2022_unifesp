@@ -23,7 +23,7 @@ opt_path <- dirname(output)
 opt_name <- basename(output)
 file_name <- basename(input)
 
-var_names <- vars
+var_names <- gsub(",","", vars)
 vars <- unlist(strsplit(vars, ","))
 
 # pacman::p_load(
@@ -51,7 +51,6 @@ plyr::join_all(result_list, by = "Var1", type = "inner") %>%
 prs_values <- data.table::fread(input) %>%
   rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~ "PRS") %>%
   select(IID, PRS)
-str(prs_values)
 
 ## fix with PCs LATER
 library(psych)
@@ -169,4 +168,31 @@ data.table::fwrite(test_df,
 )
 
 ## Make plots
-#ggthemr("fresh")
+library(ggthemr)
+library(ggplot2)
+ggthemr("fresh")
+qqplots <- list()
+subset_names <- names(subset_dfs)
+
+make_qq <- function(data) {
+  opt <- list()
+  for (i in 1:length(data)) {
+  df <- data[[i]]
+  ptitle <- subset_names[[i]]
+  opt[[ptitle]] <-
+    ggplot(df, aes(sample = PRS)) +
+    stat_qq_line() +
+    geom_qq() +
+    labs(
+      title = ptitle,
+      x = "Theoretical Quantiles",
+      y = "Observed Quantiles"
+    )
+  }
+  return(opt)
+}
+qqplots <- make_qq(subset_dfs)
+
+library(patchwork)
+combined_plot <- wrap_plots(qqplots)
+ggsave(glue("{opt_name}_plot.png"), combined_plot, device = "png")
