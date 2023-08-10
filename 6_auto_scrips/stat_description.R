@@ -94,6 +94,8 @@ make_test_df <- function(data) {
   return(opt)
 }
 
+description <- list()
+test <- list()
 
 num_test <- select_if(for_use, is.numeric)
 if (ncol(num_test) != 0) {
@@ -111,8 +113,6 @@ if (ncol(num_test) != 0) {
         }
       }
     }
-    description <- list()
-    test <- list()
     subset_names <- names(subset_dfs)
 
     for (name in subset_names) {
@@ -142,8 +142,6 @@ if (ncol(num_test) != 0) {
         }
       }
     }
-    description <- list()
-    test <- list()
     subset_names <- names(subset_dfs)
 
     for (name in subset_names) {
