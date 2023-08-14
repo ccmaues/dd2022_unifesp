@@ -1,7 +1,18 @@
 #!/usr/bin/env Rscript
-library(docopt)
-library(glue)
-library(dplyr, quietly = TRUE)
+if (!require(pacman)) {
+  message("
+Loading necessary packages... It may take a while.
+  ")
+  install.packages(pacman, dependencies = TRUE)
+  library(pacman, character.only = TRUE)
+}
+
+p_load(
+  psych, dplyr, glue, ggplot2,
+  tidyr, patchwork, optparser,
+  docopt, ggthemr, stringr
+)
+
 doc <- "
 Usage:
   my_script.R [--input FILE] [--output FILE] [--pheno FILE] [--vars FILE]
@@ -23,13 +34,8 @@ opt_path <- dirname(output)
 opt_name <- basename(output)
 file_name <- basename(input)
 
-var_names <- gsub(",","", vars)
+var_names <- gsub(",", "", vars)
 vars <- unlist(strsplit(vars, ","))
-
-# pacman::p_load(
-#     psych, dplyr, glue, ggplot2,
-#     tidyr, patchwork, optparser
-#     ) # add ggthemr later
 
 variables <- readRDS(pheno)
 for_use <- select(variables, all_of(vars))
@@ -53,9 +59,6 @@ prs_values <- data.table::fread(input) %>%
   select(IID, PRS)
 
 ## fix with PCs LATER
-library(psych)
-library(stringr)
-
 if (str_detect(file_name, "_Score.profile")) {
   name_tool <- gsub("_Score", "", file_name) %>%
     gsub(".profile", "", .)
@@ -95,7 +98,6 @@ make_test_df <- function(data) {
 
 description <- list()
 test <- list()
-
 num_test <- select_if(for_use, is.numeric)
 if (ncol(num_test) != 0) {
     for (i in 1:ncol(for_use)) {
@@ -168,8 +170,6 @@ data.table::fwrite(test_df,
 )
 
 ## Make plots
-library(ggthemr)
-library(ggplot2)
 ggthemr("fresh")
 qqplots <- list()
 subset_names <- names(subset_dfs)
