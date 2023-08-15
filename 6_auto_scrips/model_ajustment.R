@@ -7,7 +7,7 @@ Loading necessary packages... It may take a while.
   library(pacman, character.only = TRUE)
 }
 
-p_load(plyr, glue, docopt)
+p_load(dplyr, glue, docopt)
 
 doc <- "
 Description:
@@ -35,15 +35,21 @@ file_name <- basename(input)
 
 var_names <- gsub(",", "", vars)
 vars <- unlist(strsplit(vars, ","))
+vars <- c(vars, paste("PC", 1:20, sep = ""))
 
 variables <- readRDS(pheno)
-for_use <- select(variables, all_of(vars))
+for_use <- select(variables, IID, all_of(vars))
 prs_values <- data.table::fread(input) %>%
   rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~ "PRS") %>%
   select(IID, PRS)
 
 ## Join data
+for_ajustment <- inner_join(for_use, prs_values, by = "IID")
 
 ## Use Generalized Linear Model
-
+# it depends on the PRS distribution model
+ajusted <- glm(PRS ~ . - IID, data = for_ajustment, family = gaussian)
+final_model <- data.frame(ajusted$xlevels$IID, ajusted$residuals)
+colnames(final_model) = c("IID", "PRS_residuals")
 ## Save new R object with ajusted PRS model
+saveRDS(final_model, glue("{opt_path}/{opt_name}.RDS"))
