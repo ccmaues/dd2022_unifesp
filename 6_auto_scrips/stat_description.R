@@ -53,7 +53,7 @@ plyr::join_all(result_list, by = "Var1", type = "inner") %>%
   rename(Type = Var1) %>%
   data.table::fwrite(.,
     glue("{opt_path}/{opt_name}_{var_names}_N.tsv"),
-    quote = FALSE, sep = "\t",
+    quote = FALSE, sep = ",",
     row.names = FALSE, col.names = TRUE)
 
 if (file.exists(glue("{opt_path}/{opt_name}_{var_names}_N.tsv"))) {
