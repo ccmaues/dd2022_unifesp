@@ -112,6 +112,7 @@ message("
 #### Making normality test for variables . . .
 ")
 if (ncol(num_test) != 0) {
+  subset_dfs <- list()
   for (i in 1:ncol(for_use)) {
     for_sep <- data.frame(for_use[[i]])
     col_name <- colnames(for_use)[i]
@@ -198,7 +199,7 @@ make_qq <- function(data) {
   df <- data[[i]]
   ptitle <- subset_names[[i]]
   opt[[ptitle]] <-
-    ggplot(df, aes(sample = PRS)) +
+    ggplot(df, aes(sample = PRS)) + # change this for column name instead (for other numerical variables)
     stat_qq_line() +
     geom_qq() +
     labs(
