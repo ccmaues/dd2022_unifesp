@@ -9,8 +9,8 @@ Loading necessary packages... It may take a while.
 
 p_load(
   psych, dplyr, glue, ggplot2,
-  tidyr, patchwork, optparser,
-  docopt, ggthemr, stringr
+  tidyr, patchwork, docopt, 
+  ggthemr, stringr
 )
 
 doc <- "
