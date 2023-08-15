@@ -9,7 +9,7 @@ Loading necessary packages... It may take a while.
 
 p_load(
   psych, dplyr, glue, ggplot2,
-  tidyr, patchwork, docopt, 
+  tidyr, patchwork, docopt,
   ggthemr, stringr
 )
 
@@ -40,6 +40,9 @@ vars <- unlist(strsplit(vars, ","))
 variables <- readRDS(pheno)
 for_use <- select(variables, all_of(vars))
 
+message("
+#### Describing variables. . .
+")
 ## Count N in var
 result_list <- lapply(vars, function(col_name) {
   opt <- as.data.frame(table(for_use[[col_name]])) %>%
@@ -49,9 +52,15 @@ result_list <- lapply(vars, function(col_name) {
 plyr::join_all(result_list, by = "Var1", type = "inner") %>%
   rename(Type = Var1) %>%
   data.table::fwrite(.,
-    glue("{output}_{var_names}_N.tsv",
+    glue("{opt_path}/{opt_name}_{var_names}_N.tsv"),
     quote = FALSE, sep = "\t",
-    row.names = FALSE, col.names = TRUE))
+    row.names = FALSE, col.names = TRUE)
+
+if (file.exists(glue("{opt_path}/{opt_name}_{var_names}_N.tsv"))) {
+  print("Variable(s) N sample written!")
+} else {
+  print("Problem saving file with N sample.")
+}
 
 ## Test normality
 prs_values <- data.table::fread(input) %>%
@@ -99,6 +108,9 @@ make_test_df <- function(data) {
 description <- list()
 test <- list()
 num_test <- select_if(for_use, is.numeric)
+message("
+#### Making normality test for variables . . .
+")
 if (ncol(num_test) != 0) {
     for (i in 1:ncol(for_use)) {
       if (names(for_use)[i] != "PRS") {
@@ -159,17 +171,32 @@ description_df <- do.call(rbind, description)
 test_df <- do.call(rbind, test)
 
 data.table::fwrite(description_df,
-  glue("{output}_{var_names}_{name_tool}_describe.tsv"),
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_describe.tsv"),
   quote = FALSE, sep = ",",
   row.names = TRUE, col.names = TRUE
 )
+if (file.exists(
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_describe.tsv"))) {
+  print("Description written!")
+} else {
+  print("Problem saving file with variable description.")
+}
 data.table::fwrite(test_df,
-  glue("{output}_{var_names}_{name_tool}_norm_test.tsv"),
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_norm_test.tsv"),
   quote = FALSE, sep = ",",
   row.names = TRUE, col.names = TRUE
 )
+if (file.exists(
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_norm_test.tsv"))) {
+  print("Normal distribution test DONE!")
+} else {
+  print("Problem saving file with distribution test.")
+}
 
 ## Make plots
+message("
+#### Making Q-Q plots!
+")
 ggthemr("fresh")
 qqplots <- list()
 subset_names <- names(subset_dfs)
@@ -195,4 +222,10 @@ qqplots <- make_qq(subset_dfs)
 
 library(patchwork)
 combined_plot <- wrap_plots(qqplots)
-ggsave(glue("{opt_name}_plot.png"), combined_plot, device = "png")
+ggsave(glue("{opt_path}/{opt_name}_plot.png"), combined_plot, device = "png")
+if (file.exists(
+  glue("{opt_path}/{opt_name}_plot.png"))) {
+  print("Plot saved!")
+} else {
+  print("Problem saving file the plot.")
+}
