@@ -193,22 +193,41 @@ ggthemr("fresh")
 qqplots <- list()
 subset_names <- names(subset_dfs)
 
-make_qq <- function(data) {
-  opt <- list()
-  for (i in 1:length(data)) {
-    df <- data[[i]]
-    colnames(df) <- c("value")
-    ptitle <- subset_names[[i]]
-    opt[[ptitle]] <-
-      ggplot(df, aes(sample = value)) +
+if (ncol(num_test) != 0) {
+  make_qq <- function(data) {
+    opt <- list()
+    for (i in 1:length(data)) {
+      df <- data[[i]]
+      colnames(df) <- c("value")
+      ptitle <- subset_names[[i]]
+      opt[[ptitle]] <-
+        ggplot(df, aes(sample = value)) +
         geom_qq() +
         labs(
           title = ptitle,
           x = "Theoretical Quantiles",
           y = "Observed Quantiles"
         )
+    }
+    return(opt)
   }
-  return(opt)
+} else {
+  make_qq <- function(data) {
+    opt <- list()
+    for (i in 1:length(data)) {
+      df <- data[[i]]
+      ptitle <- subset_names[[i]]
+      opt[[ptitle]] <-
+        ggplot(df, aes(sample = PRS)) +
+        geom_qq() +
+        labs(
+          title = ptitle,
+          x = "Theoretical Quantiles",
+          y = "Observed Quantiles"
+        )
+    }
+    return(opt)
+  }
 }
 
 qqplots <- make_qq(subset_dfs)
