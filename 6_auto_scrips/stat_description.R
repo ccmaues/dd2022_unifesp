@@ -197,9 +197,7 @@ make_qq <- function(data) {
   opt <- list()
   for (i in 1:length(data)) {
     df <- data[[i]]
-    print(head(df))
     colnames(df) <- c("value")
-    print(head(df))
     ptitle <- subset_names[[i]]
     opt[[ptitle]] <-
       ggplot(df, aes(sample = value)) +
