@@ -191,7 +191,7 @@ if (file.exists(
   print("Problem saving file with distribution test.")
 }
 
-## Make plots
+## Make QQ plots
 message("
 #### Making Q-Q plots!
 ")
@@ -225,6 +225,9 @@ ggsave(
   plots,
   device = "png"
 )
+
+## Make density plots
+
 
 if (file.exists(
   glue("{opt_path}/{opt_name}_{var_names}_QQplot.png")
