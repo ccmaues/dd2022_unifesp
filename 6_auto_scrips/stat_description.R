@@ -114,7 +114,7 @@ message("
 ")
 if (ncol(num_test) != 0) {
   subset_dfs <- list()
-  for (i in seq_along(ncol(for_use))) {
+  for (i in 1:ncol(for_use)) {
     for_sep <- data.frame(for_use[[i]])
     col_name <- colnames(for_use)[i]
     colnames(for_sep) <- col_name
@@ -134,7 +134,7 @@ if (ncol(num_test) != 0) {
     inner_join(., prs_values, by = "IID") %>%
     select(., all_of(vars), PRS)
   subset_dfs <- list()
-  for (i in seq_along(ncol(norm_test))) {
+  for (i in 1:ncol(norm_test)) {
     if (names(norm_test)[i] != "PRS") {
       col_name <- names(norm_test)[i]
       fcolumn <- levels(norm_test[[i]])
@@ -144,7 +144,8 @@ if (ncol(num_test) != 0) {
         subset_data <- for_sep %>%
           filter(!!sym(col_name) == level)
         new_df_name <- paste(col_name, level, sep = "_")
-        subset_dfs[[new_df_name]] <- subset_data
+        subset_dfs[[new_df_name]] <- subset_data %>% 
+          select(PRS)
       }
     }
   }
@@ -196,41 +197,22 @@ ggthemr("fresh")
 qqplots <- list()
 subset_names <- names(subset_dfs)
 
-if (ncol(num_test) != 0) {
-  make_qq <- function(data) {
-    opt <- list()
-    for (i in seq_along(length(data))) {
-      df <- data[[i]]
-      colnames(df) <- c("value")
-      ptitle <- subset_names[[i]]
-      opt[[ptitle]] <-
-        ggplot(df, aes(sample = value)) +
-        geom_qq() +
-        labs(
-          title = ptitle,
-          x = "Theoretical Quantiles",
-          y = "Observed Quantiles"
-        )
-    }
-    return(opt)
+make_qq <- function(data) {
+  opt <- list()
+  for (i in 1:length(data)) {
+    df <- data[[i]]
+    ptitle <- subset_names[[i]]
+    print(head(df))
+    opt[[ptitle]] <-
+      ggplot(df, aes(sample = PRS)) +
+      geom_qq() +
+      labs(
+        title = ptitle,
+        x = "Theoretical Quantiles",
+        y = "Observed Quantiles"
+      )
   }
-} else {
-  make_qq <- function(data) {
-    opt <- list()
-    for (i in seq_along(length(data))) {
-      df <- data[[i]]
-      ptitle <- subset_names[[i]]
-      opt[[ptitle]] <-
-        ggplot(df, aes(sample = PRS)) +
-        geom_qq() +
-        labs(
-          title = ptitle,
-          x = "Theoretical Quantiles",
-          y = "Observed Quantiles"
-        )
-    }
-    return(opt)
-  }
+  return(opt)
 }
 
 qqplots <- make_qq(subset_dfs)
