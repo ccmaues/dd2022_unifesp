@@ -216,7 +216,11 @@ qqplots <- make_qq(subset_dfs)
 
 library(patchwork)
 combined_plot <- wrap_plots(qqplots)
-ggsave(glue("{opt_path}/{opt_name}_{var_names}_QQplot.png"), combined_plot, device = "png")
+ggsave(
+  glue("{opt_path}/{opt_name}_{var_names}_QQplot.png"),
+  combined_plot,
+  device = "png"
+)
 if (file.exists(
   glue("{opt_path}/{opt_name}_plot.png"))) {
   print("Plot saved!")
