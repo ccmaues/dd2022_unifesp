@@ -82,7 +82,6 @@ if (str_detect(file_name, "_Score.profile")) {
 make_describe_df <- function(data) {
   opt <- data.frame(
     Tool = name_tool,
-    Variable = data$vars,
     N = data$n,
     SD = data$sd,
     Median = data$median,
@@ -124,7 +123,6 @@ if (ncol(num_test) != 0) {
       data <- subset_dfs[[name]]
       d <- psych::describe(data[[glue("{name}")]])
       t <- nortest::ad.test(data[[glue("{name}")]])
-
       description[[name]] <- make_describe_df(d)
       test[[name]] <- make_test_df(t)
     }
@@ -144,22 +142,26 @@ if (ncol(num_test) != 0) {
         subset_data <- for_sep %>%
           filter(!!sym(col_name) == level)
         new_df_name <- paste(col_name, level, sep = "_")
-        subset_dfs[[new_df_name]] <- subset_data %>% 
+        subset_dfs[[new_df_name]] <- subset_data %>%
           select(PRS)
       }
     }
   }
   subset_names <- names(subset_dfs)
-
   for (name in subset_names) {
     data <- subset_dfs[[name]]
     d <- psych::describe(data$PRS)
     t <- nortest::ad.test(data$PRS)
-
     description[[name]] <- make_describe_df(d)
     test[[name]] <- make_test_df(t)
   }
 }
+subset_dfs <- lapply(subset_dfs, function(df) {
+  colnames(df) <- "value"
+  return(df)
+})
+
+str(subset_dfs)
 
 description_df <- do.call(rbind, description)
 test_df <- do.call(rbind, test)
@@ -202,9 +204,8 @@ make_qq <- function(data) {
   for (i in 1:length(data)) {
     df <- data[[i]]
     ptitle <- subset_names[[i]]
-    print(head(df))
     opt[[ptitle]] <-
-      ggplot(df, aes(sample = PRS)) +
+      ggplot(df, aes(sample = value)) +
       geom_qq() +
       labs(
         title = ptitle,
