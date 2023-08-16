@@ -21,7 +21,7 @@ Options:
   -i, --input FILE    # PRS file with scores [ file.profile | file.all_score ]
   -o, --output FILE   # Output file names
   -p, --pheno FILE    # RDS file with variables [ file.RDS ]
-  -v, --vars FILE     # Column names to be used in file.RDS [ var1,var2,var3 ] 
+  -v, --vars FILE     # Column names to be used in file.RDS [ var1,var2,var3 ]
 "
 
 args <- docopt(doc)
@@ -54,7 +54,8 @@ plyr::join_all(result_list, by = "Var1", type = "inner") %>%
   data.table::fwrite(.,
     glue("{opt_path}/{opt_name}_{var_names}_N.tsv"),
     quote = FALSE, sep = ",",
-    row.names = FALSE, col.names = TRUE)
+    row.names = FALSE, col.names = TRUE
+  )
 
 if (file.exists(glue("{opt_path}/{opt_name}_{var_names}_N.tsv"))) {
   print("Variable(s) N sample written!")
@@ -64,7 +65,7 @@ if (file.exists(glue("{opt_path}/{opt_name}_{var_names}_N.tsv"))) {
 
 ## Test normality
 prs_values <- data.table::fread(input) %>%
-  rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~ "PRS") %>%
+  rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~"PRS") %>%
   select(IID, PRS)
 
 ## fix with PCs LATER
@@ -80,17 +81,17 @@ if (str_detect(file_name, "_Score.profile")) {
 
 make_describe_df <- function(data) {
   opt <- data.frame(
-  Tool = name_tool,
-  Variable = data$vars,
-  N = data$n,
-  SD = data$sd,
-  Median = data$median,
-  Min = data$min,
-  Max = data$max,
-  Range = data$range,
-  Skew = data$skew,
-  Kurtosis = data$kurtosis,
-  SE = data$se
+    Tool = name_tool,
+    Variable = data$vars,
+    N = data$n,
+    SD = data$sd,
+    Median = data$median,
+    Min = data$min,
+    Max = data$max,
+    Range = data$range,
+    Skew = data$skew,
+    Kurtosis = data$kurtosis,
+    SE = data$se
   )
   return(opt)
 }
@@ -113,7 +114,7 @@ message("
 ")
 if (ncol(num_test) != 0) {
   subset_dfs <- list()
-  for (i in 1:ncol(for_use)) {
+  for (i in seq_along(ncol(for_use))) {
     for_sep <- data.frame(for_use[[i]])
     col_name <- colnames(for_use)[i]
     colnames(for_sep) <- col_name
@@ -126,37 +127,37 @@ if (ncol(num_test) != 0) {
 
       description[[name]] <- make_describe_df(d)
       test[[name]] <- make_test_df(t)
-     }
+    }
   }
 } else {
   norm_test <- select(variables, IID, all_of(vars)) %>%
     inner_join(., prs_values, by = "IID") %>%
     select(., all_of(vars), PRS)
-    subset_dfs <- list()
-    for (i in 1:ncol(norm_test)) {
-      if (names(norm_test)[i] != "PRS") {
-        col_name <- names(norm_test)[i]
-        fcolumn <- levels(norm_test[[i]])
-        for_sep <- data.frame(norm_test[[i]], norm_test[["PRS"]])
-        colnames(for_sep) <- c(col_name, "PRS")
-        for (level in fcolumn) {
+  subset_dfs <- list()
+  for (i in seq_along(ncol(norm_test))) {
+    if (names(norm_test)[i] != "PRS") {
+      col_name <- names(norm_test)[i]
+      fcolumn <- levels(norm_test[[i]])
+      for_sep <- data.frame(norm_test[[i]], norm_test[["PRS"]])
+      colnames(for_sep) <- c(col_name, "PRS")
+      for (level in fcolumn) {
         subset_data <- for_sep %>%
-            filter(!!sym(col_name) == level)
-          new_df_name <- paste(col_name, level, sep = "_")
-          subset_dfs[[new_df_name]] <- subset_data
-        }
+          filter(!!sym(col_name) == level)
+        new_df_name <- paste(col_name, level, sep = "_")
+        subset_dfs[[new_df_name]] <- subset_data
       }
     }
-    subset_names <- names(subset_dfs)
+  }
+  subset_names <- names(subset_dfs)
 
-    for (name in subset_names) {
-        data <- subset_dfs[[name]]
-        d <- psych::describe(data$PRS)
-        t <- nortest::ad.test(data$PRS)
+  for (name in subset_names) {
+    data <- subset_dfs[[name]]
+    d <- psych::describe(data$PRS)
+    t <- nortest::ad.test(data$PRS)
 
-      description[[name]] <- make_describe_df(d)
-      test[[name]] <- make_test_df(t)
-    }
+    description[[name]] <- make_describe_df(d)
+    test[[name]] <- make_test_df(t)
+  }
 }
 
 description_df <- do.call(rbind, description)
@@ -168,7 +169,8 @@ data.table::fwrite(description_df,
   row.names = TRUE, col.names = TRUE
 )
 if (file.exists(
-  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_describe.tsv"))) {
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_describe.tsv")
+)) {
   print("Description written!")
 } else {
   print("Problem saving file with variable description.")
@@ -179,7 +181,8 @@ data.table::fwrite(test_df,
   row.names = TRUE, col.names = TRUE
 )
 if (file.exists(
-  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_norm_test.tsv"))) {
+  glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_norm_test.tsv")
+)) {
   print("Normal distribution test DONE!")
 } else {
   print("Problem saving file with distribution test.")
@@ -196,7 +199,7 @@ subset_names <- names(subset_dfs)
 if (ncol(num_test) != 0) {
   make_qq <- function(data) {
     opt <- list()
-    for (i in 1:length(data)) {
+    for (i in seq_along(length(data))) {
       df <- data[[i]]
       colnames(df) <- c("value")
       ptitle <- subset_names[[i]]
@@ -214,7 +217,7 @@ if (ncol(num_test) != 0) {
 } else {
   make_qq <- function(data) {
     opt <- list()
-    for (i in 1:length(data)) {
+    for (i in seq_along(length(data))) {
       df <- data[[i]]
       ptitle <- subset_names[[i]]
       opt[[ptitle]] <-
@@ -233,10 +236,10 @@ if (ncol(num_test) != 0) {
 qqplots <- make_qq(subset_dfs)
 
 library(patchwork)
-combinedQQ <- wrap_plots(qqplots)
+plots <- wrap_plots(qqplots)
 ggsave(
   glue("{opt_path}/{opt_name}_{var_names}_QQplot.png"),
-  combinedQQ,
+  plots,
   device = "png"
 )
 
@@ -249,6 +252,6 @@ if (file.exists(
 }
 
 message(glue("\n
-#### Outputs saved at: 
+#### Outputs saved at:
 {opt_path}
 "))
