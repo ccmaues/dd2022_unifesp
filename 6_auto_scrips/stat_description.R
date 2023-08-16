@@ -161,8 +161,6 @@ subset_dfs <- lapply(subset_dfs, function(df) {
   return(df)
 })
 
-str(subset_dfs)
-
 description_df <- do.call(rbind, description)
 test_df <- do.call(rbind, test)
 
@@ -225,17 +223,48 @@ ggsave(
   plots,
   device = "png"
 )
-
-## Make density plots
-
-
 if (file.exists(
   glue("{opt_path}/{opt_name}_{var_names}_QQplot.png")
 )) {
   print("QQ plot saved!")
 } else {
-  print("Problem saving file the plot.")
+  print("Problem saving file the QQ plot.")
 }
+
+## Make density plots
+if(ncol(num_test) == 0){
+  message("
+#### Making Density plots!
+")
+  make_den <- function(data) {
+    opt <-
+      ggplot(data, aes(x = PRS, fill = gp, color = gp)) +
+      geom_density(alpha = 0.4) +
+      labs(
+        x = "PRS scale",
+        title = glue("PRS values distribution at {vars}"),
+      )
+    return(opt)
+  }
+  for_plot <- select(variables, all_of(vars), IID) %>%
+    inner_join(., prs_values, by = "IID") %>%
+    rename("gp" = vars) %>%
+    select(-IID)
+  density_plot <- make_den(for_plot)
+  ggsave(
+    glue("{opt_path}/{opt_name}_{var_names}_Denplot.png"),
+    density_plot,
+    device = "png"
+  )
+  if (file.exists(
+    glue("{opt_path}/{opt_name}_{var_names}_Denplot.png")
+  )) {
+    print("Density plot saved!")
+  } else {
+    print("Problem saving file the density plot.")
+  }
+}
+## add part in which i set groups for numbers
 
 message(glue("\n
 #### Outputs saved at:
