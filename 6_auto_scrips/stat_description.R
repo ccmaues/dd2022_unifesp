@@ -201,27 +201,30 @@ make_qq <- function(data) {
     ptitle <- subset_names[[i]]
     opt[[ptitle]] <-
       ggplot(df, aes(sample = value)) +
-      geom_qq() +
-      labs(
-        title = ptitle,
-        x = "Theoretical Quantiles",
-        y = "Observed Quantiles"
-      )
+        geom_qq() +
+        labs(
+          title = ptitle,
+          x = "Theoretical Quantiles",
+          y = "Observed Quantiles"
+        )
   }
   return(opt)
 }
+
 qqplots <- make_qq(subset_dfs)
 
 library(patchwork)
-combined_plot <- wrap_plots(qqplots)
+combinedQQ <- wrap_plots(qqplots)
 ggsave(
   glue("{opt_path}/{opt_name}_{var_names}_QQplot.png"),
-  combined_plot,
+  combinedQQ,
   device = "png"
 )
+
 if (file.exists(
-  glue("{opt_path}/{opt_name}_plot.png"))) {
-  print("Plot saved!")
+  glue("{opt_path}/{opt_name}_{var_names}_QQplot.png")
+)) {
+  print("QQ plot saved!")
 } else {
   print("Problem saving file the plot.")
 }
