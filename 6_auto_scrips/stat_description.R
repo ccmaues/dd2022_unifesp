@@ -196,17 +196,19 @@ subset_names <- names(subset_dfs)
 make_qq <- function(data) {
   opt <- list()
   for (i in 1:length(data)) {
-  df <- data[[i]]
-  ptitle <- subset_names[[i]]
-  opt[[ptitle]] <-
-    ggplot(df, aes(sample = PRS)) + # change this for column name instead (for other numerical variables)
-    stat_qq_line() +
-    geom_qq() +
-    labs(
-      title = ptitle,
-      x = "Theoretical Quantiles",
-      y = "Observed Quantiles"
-    )
+    df <- data[[i]]
+    print(head(df))
+    colnames(df) <- c("value")
+    print(head(df))
+    ptitle <- subset_names[[i]]
+    opt[[ptitle]] <-
+      ggplot(df, aes(sample = value)) +
+      geom_qq() +
+      labs(
+        title = ptitle,
+        x = "Theoretical Quantiles",
+        y = "Observed Quantiles"
+      )
   }
   return(opt)
 }
