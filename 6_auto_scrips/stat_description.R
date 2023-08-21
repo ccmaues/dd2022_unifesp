@@ -232,37 +232,78 @@ if (file.exists(
 }
 
 ## Make density plots
-if(ncol(num_test) == 0){
-  message("
+message("
 #### Making Density plots!
 ")
-  make_den <- function(data) {
+if (ncol(num_test) == 0) {
+  for_plot <- select(variables, all_of(vars), IID) %>%
+    inner_join(., prs_values, by = "IID") %>%
+    rename("gp" = vars) %>%
+    select(-IID)
+} else {
+  if(grepl("Age", vars)) {
+    temp <- for_use %>%
+      tidyr::pivot_longer(
+      contains("Age"),
+      names_to = "wave",
+      values_to = "gp") %>%
+      na.omit
+    temp$wave <- gsub("_Age", "", temp$wave)
+    for_plot <- list(
+      W0 = filter(temp, wave == "W0") %>% select(-wave, -IID),
+      W1 = filter(temp, wave == "W1") %>% select(-wave, -IID),
+      W2 = filter(temp, wave == "W2") %>% select(-wave, -IID))
+  } else {
+    for_plot <- for_use %>%
+      mutate(gp = case_when(
+        EUR > 0.7 ~ "EUR",
+        AMR > 0.7 ~ "AMR",
+        AFR > 0.7 ~ "AFR",
+        TRUE ~ "Other"
+      )) %>%
+      select(PRS, gp)
+  }
+}
+make_plot <- function(data) {
+  if(class(for_plot) == "list") {
+    tnames <- names(for_plot)
+    plot_list <- list()
+    for(i in 1:length(for_plot)) {
+      data <- for_plot[[i]]
+      p <- ggplot(
+        for_plot[[1]],
+        aes(x = PRS, fill = factor(gp), color = factor(gp))) +
+        geom_bar(alpha = 0.6, position = "dodge") +
+        labs(
+          x = "PRS scale",
+          title = glue("PRS values distribution by age at {tnames[i]}")
+        )
+      plot_list[[i]] <- p
+      }
+      library(patchwork)
+      plot <- wrap_plots(plot_list, ncol = 1)
+  } else { # aqui
     opt <-
       ggplot(data, aes(x = PRS, fill = gp, color = gp)) +
       geom_density(alpha = 0.4) +
       labs(
         x = "PRS scale",
-        title = glue("PRS values distribution at {vars}"),
-      )
-    return(opt)
+        title = glue("PRS values distribution at {vars}"))
+  return(opt)
   }
-  for_plot <- select(variables, all_of(vars), IID) %>%
-    inner_join(., prs_values, by = "IID") %>%
-    rename("gp" = vars) %>%
-    select(-IID)
-  density_plot <- make_den(for_plot)
-  ggsave(
-    glue("{opt_path}/{opt_name}_{var_names}_Denplot.png"),
-    density_plot,
-    device = "png"
-  )
-  if (file.exists(
-    glue("{opt_path}/{opt_name}_{var_names}_Denplot.png")
-  )) {
-    print("Density plot saved!")
-  } else {
-    print("Problem saving file the density plot.")
-  }
+}
+plot <- make_plot(for_plot)
+ggsave(
+  glue("{opt_path}/{opt_name}_{var_names}_Denplot.png"),
+  plot,
+  device = "png"
+)
+if (file.exists(
+  glue("{opt_path}/{opt_name}_{var_names}_Denplot.png")
+)) {
+  print("Density plot saved!")
+} else {
+  print("Problem saving file the density plot.")
 }
 ## add part in which i set groups for numbers
 
