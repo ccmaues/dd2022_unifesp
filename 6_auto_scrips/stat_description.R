@@ -254,7 +254,9 @@ if (ncol(num_test) == 0) {
       W1 = filter(temp, wave == "W1") %>% select(-wave, -IID),
       W2 = filter(temp, wave == "W2") %>% select(-wave, -IID))
   } else {
-    for_plot <- for_use %>%
+    for_plot <- select(variables, all_of(vars), IID) %>%
+      inner_join(., prs_values, by = "IID") %>%
+      select(all_of(vars), PRS) %>%
       mutate(gp = case_when(
         EUR > 0.7 ~ "EUR",
         AMR > 0.7 ~ "AMR",
