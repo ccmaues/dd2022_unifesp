@@ -193,7 +193,6 @@ if (file.exists(
 message("
 #### Making Q-Q plots!
 ")
-ggthemr("fresh")
 qqplots <- list()
 subset_names <- names(subset_dfs)
 
@@ -213,9 +212,9 @@ make_qq <- function(data) {
   }
   return(opt)
 }
-
+ggthemr("fresh")
+set_swatch()
 qqplots <- make_qq(subset_dfs)
-
 library(patchwork)
 plots <- wrap_plots(qqplots)
 ggsave(
@@ -242,7 +241,8 @@ if (ncol(num_test) == 0) {
     select(-IID)
 } else {
   if(grepl("Age", vars)) {
-    temp <- for_use %>%
+    temp <- select(variables, all_of(vars), IID) %>%
+      inner_join(., prs_values, by = "IID") %>%
       tidyr::pivot_longer(
       contains("Age"),
       names_to = "wave",
@@ -273,9 +273,9 @@ make_plot <- function(data) {
     for(i in 1:length(for_plot)) {
       data <- for_plot[[i]]
       p <- ggplot(
-        for_plot[[1]],
+        data,
         aes(x = PRS, fill = factor(gp), color = factor(gp))) +
-        geom_bar(alpha = 0.6, position = "dodge") +
+        geom_density(alpha = 0.6) +
         labs(
           x = "PRS scale",
           title = glue("PRS values distribution by age at {tnames[i]}")
@@ -283,8 +283,8 @@ make_plot <- function(data) {
       plot_list[[i]] <- p
       }
       library(patchwork)
-      plot <- wrap_plots(plot_list, ncol = 1)
-  } else { # aqui
+      plot <- wrap_plots(plot_list, ncol = 1) # fix this
+  } else {
     opt <-
       ggplot(data, aes(x = PRS, fill = gp, color = gp)) +
       geom_density(alpha = 0.4) +
@@ -307,7 +307,6 @@ if (file.exists(
 } else {
   print("Problem saving file the density plot.")
 }
-## add part in which i set groups for numbers
 
 message(glue("\n
 #### Outputs saved at:
