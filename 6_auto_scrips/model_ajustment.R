@@ -50,6 +50,7 @@ for_ajustment <- inner_join(for_use, prs_values, by = "IID")
 # it depends on the PRS distribution model
 ajusted <- glm(PRS ~ . - IID, data = for_ajustment, family = gaussian)
 final_model <- data.frame(ajusted$xlevels$IID, ajusted$residuals)
-colnames(final_model) = c("IID", "PRS_residuals")
+colnames(final_model) <- c("IID", "PRS_residuals")
+final_model$IID <- as.character(final_model$IID)
 ## Save new R object with ajusted PRS model
 saveRDS(final_model, glue("{opt_path}/{opt_name}.RDS"))
