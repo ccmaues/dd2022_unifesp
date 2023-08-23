@@ -308,6 +308,9 @@ if (file.exists(
   print("Problem saving file the density plot.")
 }
 
+## Make T-test if 2 groups
+## Make ANOVA if more
+
 message(glue("\n
 #### Outputs saved at:
 {opt_path}
