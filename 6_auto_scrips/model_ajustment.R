@@ -53,4 +53,4 @@ final_model <- data.frame(ajusted$xlevels$IID, ajusted$residuals)
 colnames(final_model) <- c("IID", "PRS_residuals")
 final_model$IID <- as.character(final_model$IID)
 ## Save new R object with ajusted PRS model
-saveRDS(final_model, glue("{opt_path}/{opt_name}.RDS"))
+saveRDS(final_model, glue("{opt_path}/{opt_name}_PRS_ajusted.RDS"))
