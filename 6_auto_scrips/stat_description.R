@@ -40,6 +40,9 @@ vars <- unlist(strsplit(vars, ","))
 variables <- readRDS(pheno)
 for_use <- select(variables, all_of(vars))
 
+## Make the PRS alone description
+## Write the code later
+
 message("
 #### Describing variables. . .
 ")
@@ -283,7 +286,7 @@ make_plot <- function(data) {
       plot_list[[i]] <- p
       }
       library(patchwork)
-      plot <- wrap_plots(plot_list, ncol = 1) # fix this
+      plot <- wrap_plots(plot_list, ncol = 1)
   } else {
     opt <-
       ggplot(data, aes(x = PRS, fill = gp, color = gp)) +
