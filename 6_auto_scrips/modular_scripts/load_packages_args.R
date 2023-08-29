@@ -21,7 +21,7 @@ Options:
   -i, --input FILE    # PRS file with scores [ file.profile | file.all_score ]
   -o, --output FILE   # Output file names
   -p, --pheno FILE    # RDS file with variables [ file.RDS ]
-  -v, --vars LIST     # Column names to be used in file.RDS [ var1,var2,var3]
+  -v, --vars LIST     # Column names to be used in file.RDS [ var1,var2,var3 ]
 "
 
 args <- docopt(doc)
