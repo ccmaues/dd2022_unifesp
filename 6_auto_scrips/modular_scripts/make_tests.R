@@ -18,11 +18,13 @@ if (!any(grepl("PRS", vars))) { # If given vars
             for (name in subset_names) {
                 data <- subset_dfs[[name]]
                 # 2. Describe variables
-                d <- psych::describe(data[[glue("{name}")]])
+                description[[name]] <- make_describe_df(
+                    psych::describe(data[[glue("{name}")]])
+                    )
                 # 3. Test normality
-                t <- nortest::ad.test(data[[glue("{name}")]])
-                description[[name]] <- make_describe_df(d)
-                test[[name]] <- make_test_df(t)
+                test[[name]] <- make_test_df(
+                    nortest::ad.test(data[[glue("{name}")]])
+                    )
             }
         }
     } else { # if NOT numeric variables
@@ -49,11 +51,9 @@ if (!any(grepl("PRS", vars))) { # If given vars
         for (name in subset_names) {
             data <- subset_dfs[[name]]
             # 2. Describe variables
-            d <- psych::describe(data$PRS)
+            description[[name]] <- make_describe_df(psych::describe(data$PRS))
             # 3. Test normality
-            t <- nortest::ad.test(data$PRS)
-            description[[name]] <- make_describe_df(d)
-            test[[name]] <- make_test_df(t)
+            test[[name]] <- make_test_df(nortest::ad.test(data$PRS))
         }
     }
     subset_dfs <- lapply(subset_dfs, function(df) {
