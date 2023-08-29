@@ -15,7 +15,7 @@ p_load(
 
 doc <- "
 Usage:
-  my_script.R [--input FILE] [--output FILE] [--pheno FILE] [--vars FILE]
+  stat_description.R [--input] [--output] [--pheno] [--vars]
 
 Options:
   -i, --input FILE    # PRS file with scores [ file.profile | file.all_score ]
@@ -28,7 +28,7 @@ args <- docopt(doc)
 input <- args[["--input"]]
 output <- args[["--output"]]
 pheno <- args[["--pheno"]]
-vars <- args[["--vars"]]
+vars <- args[["--vars"]] # if no vars, make prs test
 
 opt_path <- dirname(output)
 opt_name <- basename(output)
@@ -190,6 +190,21 @@ if (file.exists(
   print("Normal distribution test DONE!")
 } else {
   print("Problem saving file with distribution test.")
+}
+
+test_PRS <- make_test_df(nortest::ad.test(prs_values$PRS))
+data.table::fwrite(test_PRS,
+  glue("{opt_path}/{opt_name}_{name_tool}_norm_test.tsv"),
+  quote = FALSE, sep = ",",
+  row.names = TRUE, col.names = TRUE
+)
+
+if (file.exists(
+  glue("{opt_path}/{opt_name}_{name_tool}_norm_test.tsv")
+)) {
+  print("Normal distribution test DONE!")
+} else {
+  print("Problem saving file with distribution test for PRS.")
 }
 
 ## Make QQ plots

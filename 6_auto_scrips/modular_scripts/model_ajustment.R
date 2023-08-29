@@ -14,7 +14,7 @@ Description:
   This script will take the given variables and correct the PRS model with them.
 
 Usage:
-  my_script.R [--input FILE] [--output FILE] [--pheno FILE] [--vars FILE]
+  model_ajustment.R [--input] [--output] [--pheno] [--vars]
 
 Options:
   -i, --input FILE    # PRS file with scores [ file.profile | file.all_score ]
