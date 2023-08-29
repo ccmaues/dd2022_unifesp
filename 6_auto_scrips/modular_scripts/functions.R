@@ -75,7 +75,7 @@ make_plot <- function(data) {
 
 make_ttest <- function(data) {
     opt <- t.test(data[[1]]$PRS, data[[2]]$PRS)
-    data <- data.frame( # keep it here
+    data <- data.frame(
         T = opt$statistic,
         P_value = opt$p.value,
         Lower_conf_interval = opt$conf.int[1],
@@ -91,7 +91,7 @@ make_ttest <- function(data) {
 
 make_wilcoxtest <- function(data) {
     opt <- wilcox.test(data[[1]]$PRS, data[[2]]$PRS)
-    data <- data.frame( # keep it here
+    data <- data.frame(
         W = opt$statistic,
         P_value = opt$p.value,
         Method = opt$method,
@@ -99,4 +99,23 @@ make_wilcoxtest <- function(data) {
     )
     return(opt)
 }
-## Keep all tables into one object and recicle to save
+
+make_kruskalwallis <- function(data) {
+    opt <- kruskal.test(PRS ~ factor, data = data)
+    data <- data.frame(
+        Kruskal_Wallis_chi_squared = opt$statistic,
+        P_value = opt$p.value,
+        Method = opt$method,
+    )
+    return(opt)
+}
+
+make_moodmedian <- function(data) { # need to fix this
+    opt <- coin::med_test(PRS ~ factor, data = data)
+    data <- data.frame(
+        Kruskal_Wallis_chi_squared = opt$statistic,
+        P_value = opt$p.value,
+        Method = opt$method,
+    )
+    return(opt)
+}

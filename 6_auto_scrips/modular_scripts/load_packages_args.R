@@ -78,4 +78,5 @@ if (str_detect(file_name, "_Score.profile")) {
 
 source("functions.R") # Load functions for plots and tests
 source("make_tests.R") # Make data transformation for tests
+source("make_plots.R")
 source("save_files.R")
