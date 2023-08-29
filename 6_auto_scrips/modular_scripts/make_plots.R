@@ -1,0 +1,7 @@
+qqplots <- list()
+subset_names <- names(subset_dfs)
+ggthemr("fresh")
+set_swatch()
+qqplots <- make_qq(subset_dfs)
+library(patchwork)
+plots <- wrap_plots(qqplots)

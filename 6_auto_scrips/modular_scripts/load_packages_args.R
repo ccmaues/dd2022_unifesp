@@ -78,13 +78,4 @@ if (str_detect(file_name, "_Score.profile")) {
 
 source("functions.R") # Load functions for plots and tests
 source("make_tests.R") # Make data transformation for tests
-
-
-
-# qqplots <- list()
-# subset_names <- names(subset_dfs)
-# ggthemr("fresh")
-# set_swatch()
-# qqplots <- make_qq(subset_dfs)
-# library(patchwork)
-# plots <- wrap_plots(qqplots)
+source("save_files.R")
