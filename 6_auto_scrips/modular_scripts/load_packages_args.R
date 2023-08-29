@@ -79,11 +79,7 @@ if (str_detect(file_name, "_Score.profile")) {
 source("functions.R") # Load functions for plots and tests
 source("make_tests.R") # Make data transformation for tests
 
-# for_ttest <- select(readRDS(pheno), any_of(vars), IID) %>%
-#   inner_join(prs_values, for_use, by = "IID") %>%
-#   select(-IID) %>%
-#   rename(factor = vars) %>%
-#   group_split(factor)
+
 
 # qqplots <- list()
 # subset_names <- names(subset_dfs)

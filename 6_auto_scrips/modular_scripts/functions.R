@@ -73,15 +73,30 @@ make_plot <- function(data) {
     }
 }
 
-# make_ttest <- function(data) {
-#     opt <- t.test(for_ttest[[1]]["PRS"], for_ttest[[2]]["PRS"])
-#     data <- data.frame( # keep it here
-#         opt$statistic,
-#         opt$p.value,
-#         opt$conf.int,
-#         opt$method,
-#         opt$???
-#     )
-#     return(opt)
-# }
+make_ttest <- function(data) {
+    opt <- t.test(for_ttest[[1]]$PRS, for_ttest[[2]]$PRS)
+    data <- data.frame( # keep it here
+        T = opt$statistic,
+        P_value = opt$p.value,
+        Lower_conf_interval = opt$conf.int[1],
+        Upper_conf_interval = opt$conf.int[2],
+        Mean_x = opt$estimate[1],
+        Mean_y = opt$estimate[2],
+        Method = opt$method,
+        Alternative = opt$alternative,
+        Std_error = opt$stderr
+    )
+    return(opt)
+}
+
+make_wilcoxtest <- function(data) {
+    opt <- wilcox.test(for_ttest[[1]]$PRS, for_ttest[[2]]$PRS)
+    data <- data.frame( # keep it here
+        W = opt$statistic,
+        P_value = opt$p.value,
+        Method = opt$method,
+        Alternative = opt$alternative
+    )
+    return(opt)
+}
 ## Keep all tables into one object and recicle to save

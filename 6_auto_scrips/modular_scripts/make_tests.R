@@ -62,30 +62,23 @@ if (!any(grepl("PRS", vars))) { # If given vars
     })
     description_df <- do.call(rbind, description)
     test_df <- do.call(rbind, test)
+    for_ttest <- select(readRDS(pheno), all_of(vars), IID) %>%
+        inner_join(prs_values, for_use, by = "IID") %>%
+        select(-IID) %>%
+        rename(factor = vars) %>%
+        group_split(factor)
+    if(length(vars) == 2) { # make T-test
+        if(description_df$P_value > 0.05) { # normal
+            diff_test <- make_ttest(for_ttest)
+        } else { # not normal
+            diff_test <- make_wilcoxtest(for_ttest)
+        }
+    } else { # make ANOVA
+        
+    }
 } else { # Variable IS PRS
     # 2. Describe variables
     description_df <- make_describe_df(psych::describe(prs_values$PRS))
     # 3. Test normality
     test_df <- make_test_df(nortest::ad.test(prs_values$PRS))
 }
-
-## 4. Save files:
-if (!any(grepl("PRS", vars))) {
-plyr::join_all(result_list, by = "Var1", type = "inner") %>%
-    rename(Type = Var1) %>%
-    data.table::fwrite(.,
-        glue("{opt_path}/{opt_name}_{var_names}_N.tsv"),
-        quote = FALSE, sep = ",",
-        row.names = FALSE, col.names = TRUE
-    )
-}
-data.table::fwrite(description_df,
-    glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_describe.tsv"),
-    quote = FALSE, sep = ",",
-    row.names = TRUE, col.names = TRUE
-)
-data.table::fwrite(test_df,
-    glue("{opt_path}/{opt_name}_{var_names}_{name_tool}_norm_test.tsv"),
-    quote = FALSE, sep = ",",
-    row.names = TRUE, col.names = TRUE
-)
