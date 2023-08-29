@@ -74,7 +74,11 @@ if (!any(grepl("PRS", vars))) { # If given vars
             diff_test <- make_wilcoxtest(for_ttest)
         }
     } else { # make ANOVA
-        
+        if (description_df$P_value > 0.05) { # normal
+            diff_test <- make_kruskalwallis(for_ttest) # see if the test is correct
+        } else { # not normal
+            diff_test <- make_moodmedian(for_ttest) # see if the test is correct
+        }
     }
 } else { # Variable IS PRS
     # 2. Describe variables

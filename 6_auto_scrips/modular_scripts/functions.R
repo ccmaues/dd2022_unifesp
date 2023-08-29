@@ -74,7 +74,7 @@ make_plot <- function(data) {
 }
 
 make_ttest <- function(data) {
-    opt <- t.test(for_ttest[[1]]$PRS, for_ttest[[2]]$PRS)
+    opt <- t.test(data[[1]]$PRS, data[[2]]$PRS)
     data <- data.frame( # keep it here
         T = opt$statistic,
         P_value = opt$p.value,
@@ -90,7 +90,7 @@ make_ttest <- function(data) {
 }
 
 make_wilcoxtest <- function(data) {
-    opt <- wilcox.test(for_ttest[[1]]$PRS, for_ttest[[2]]$PRS)
+    opt <- wilcox.test(data[[1]]$PRS, data[[2]]$PRS)
     data <- data.frame( # keep it here
         W = opt$statistic,
         P_value = opt$p.value,
