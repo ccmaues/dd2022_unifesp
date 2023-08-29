@@ -73,23 +73,15 @@ make_plot <- function(data) {
     }
 }
 
-for_ttest <- select(variables, any_of(vars), IID) %>%
-    inner_join(prs_values, for_use, by = "IID") %>%
-    select(-IID) %>%
-    rename(factor = vars) %>%
-    group_split(factor)
-
-make_ttest <- function(data) {
-    opt <- t.test(for_ttest[[1]]["PRS"], for_ttest[[2]]["PRS"])
-    data <- data.frame( # keep it here
-        opt$statistic,
-        opt$p.value,
-        opt$conf.int,
-        opt$method,
-        opt$???
-    )
-    return(opt)
-}
-
-make_ttest(for_ttest)
+# make_ttest <- function(data) {
+#     opt <- t.test(for_ttest[[1]]["PRS"], for_ttest[[2]]["PRS"])
+#     data <- data.frame( # keep it here
+#         opt$statistic,
+#         opt$p.value,
+#         opt$conf.int,
+#         opt$method,
+#         opt$???
+#     )
+#     return(opt)
+# }
 ## Keep all tables into one object and recicle to save

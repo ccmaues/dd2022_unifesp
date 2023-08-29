@@ -21,7 +21,7 @@ Options:
   -i, --input FILE    # PRS file with scores [ file.profile | file.all_score ]
   -o, --output FILE   # Output file names
   -p, --pheno FILE    # RDS file with variables [ file.RDS ]
-  -v, --vars FILE     # Column names to be used in file.RDS [ var1,var2,var3 ]
+  -v, --vars LIST     # Column names to be used in file.RDS [ var1,var2,var3]
 "
 
 args <- docopt(doc)
@@ -33,17 +33,62 @@ vars <- args[["--vars"]]
 opt_path <- dirname(output)
 opt_name <- basename(output)
 file_name <- basename(input)
+pheno_name <- basename(pheno)
 
-var_names <- gsub(",", "", vars)
-vars <- unlist(strsplit(vars, ","))
-
-variables <- readRDS(pheno)
-for_use <- select(variables, all_of(vars))
+if(!is.na(vars) && !is.null(vars)) {
+  var_names <- gsub(",", "", vars) # must keep
+  vars <- unlist(strsplit(vars, ","))
+  for_use <- select(readRDS(pheno), all_of(vars))
+} else {
+  vars <- "PRS"
+  var_names <- "PRS"
+  for_use <- data.table::fread(input) %>%
+    rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~"PRS") %>%
+    select(IID, PRS)
+}
 
 message("
-Choosen arguments:
-    INPUT: glue("{file_name}")
-    OUTPUT: glue("{opt_name}")
-    PHENOTYPE: glue("{pheno}")
-    Variables: glue("{vars}")
+-------------------------------------------------
+
+  Chosen arguments:
+
+    INPUT:       ", file_name, "
+    OUTPUT:      ", opt_name, "
+    PHENOTYPE:   ", pheno_name, "
+    VARIABLES:   ", vars, "
+
+-------------------------------------------------
 ")
+
+## Load PRS
+prs_values <- data.table::fread(input) %>%
+  rename_at(vars(matches("PRSCS_zscore|Pt_1")), ~"PRS") %>%
+  select(IID, PRS)
+
+## Set tool name
+if (str_detect(file_name, "_Score.profile")) {
+  name_tool <- gsub("_Score", "", file_name) %>%
+    gsub(".profile", "", .)
+} else if (str_detect(file_name, "_.all_score")) {
+  name_tool <- gsub("_Score_", "", file_name) %>%
+    gsub(".all_score", "", .)
+} else {
+  name_tool <- "Unknown"
+}
+
+source("functions.R") # Load functions for plots and tests
+source("make_tests.R") # Make data transformation for tests
+
+# for_ttest <- select(readRDS(pheno), any_of(vars), IID) %>%
+#   inner_join(prs_values, for_use, by = "IID") %>%
+#   select(-IID) %>%
+#   rename(factor = vars) %>%
+#   group_split(factor)
+
+# qqplots <- list()
+# subset_names <- names(subset_dfs)
+# ggthemr("fresh")
+# set_swatch()
+# qqplots <- make_qq(subset_dfs)
+# library(patchwork)
+# plots <- wrap_plots(qqplots)
