@@ -10,8 +10,6 @@ if (Sys.info()["sysname"] == "Linux") {
   path <- "D:"
 }
 
-setwd(glue("{path}"))
-
 phenotypes <- readRDS(glue("{path}/objects_R/cass_BHRC_phenotype.RDS")) %>%
   select(
     IID, wave, dcanyhk, dceat, dcanyanx,
@@ -127,5 +125,5 @@ for (name_column in colnames(phenotypes)[3:ncol(phenotypes)]) {
 
 saveRDS(
   processed_data,
-  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_all_phenotypes_15-02-2024.RD.RDS")
+  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_all_phenotypes_26-02-2024.RD.RDS")
 )
