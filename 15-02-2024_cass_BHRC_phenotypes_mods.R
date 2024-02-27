@@ -107,7 +107,7 @@ for (name_column in colnames(phenotypes)[3:ncol(phenotypes)]) {
     print("No rows in case3")
   } else {
   df_new <-
-    rbind(df_new, data.frame(IID = case3$IID, W0 = 2, W1 = 2, W2 = 2))
+    rbind(df_new, data.frame(IID = case3$IID, W0 = 0, W1 = 2, W2 = 2))
   }
 
   # Get people that are case in W2 (no people with case here - too many NAs)
