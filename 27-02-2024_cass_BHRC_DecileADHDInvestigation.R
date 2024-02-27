@@ -161,7 +161,7 @@ p2 <- for_plot %>%
     theme_minimal() +
     labs(
         title = "BHRC ADHD Deciles description",
-        subtitle = "N = 289",
+        subtitle = glue("N = {nrow(for_plot1)}"),
         caption = "27-02-2024_cass_BHRC_DecileADHDInvestigation.R"
     ) +
     theme(
@@ -177,7 +177,7 @@ p2 <- for_plot %>%
         legend.text = element_text(size = 15),
         legend.title = element_text(size = 15, face = "bold"),
         legend.title.position = "top",
-        plot.title = element_text(size = 35, face = "bold", hjust = 0.5),
+        plot.title = element_text(size = 35, face = "bold", hjust = 1.2),
         plot.subtitle = element_text(size = 30, hjust = -1.5),
         plot.caption = element_text(size = 20, hjust = 0.5, vjust = 4)
     )
