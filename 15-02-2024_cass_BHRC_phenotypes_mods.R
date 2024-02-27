@@ -125,5 +125,5 @@ for (name_column in colnames(phenotypes)[3:ncol(phenotypes)]) {
 
 saveRDS(
   processed_data,
-  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_all_phenotypes_26-02-2024.RD.RDS")
+  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_All_phenotypes_26-02-2024.RD.RDS")
 )
