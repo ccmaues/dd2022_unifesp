@@ -17,7 +17,7 @@ if (Sys.info()["sysname"] == "Linux") {
 
 # Data for models ajustment and plot
 pheno <-
-	readRDS(glue("{path}/objects_R/cass_BHRC_mod_All_phenotypes_26-02-2024.RDS"))$dcanyhk
+	readRDS(glue("{path}/objects_R/cass_BHRC_mod_All_Phenotypes_26-02-2024.RDS"))$dcanyhk
 ages <-
 	readRDS(glue("{path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %>%
   rename(age_W0 = W0, age_W1 = W1, age_W2 = W2)
@@ -424,7 +424,7 @@ p5 <-
   linetype = "dashed") +
   geom_point(aes(x = Quintile, y = prevalence * 100, color = wave), size = 5) +
   scale_x_discrete(labels = new_x_axis_5) +
-  scale_y_continuous(n.breaks = 10) +
+  scale_y_continuous(n.breaks = 15, limits = c(1, 30)) +
   theme_publish() +
   labs(
     title = glue("BHRC ADHD prevalence data\nN = {nrow(data_adhd)}"),
@@ -451,7 +451,7 @@ p6 <-
   linetype = "dashed") +
   geom_point(aes(x = Quintile, y = prevalence * 100, color = wave), size = 5) +
   scale_x_discrete(labels = new_x_axis_5) +
-  scale_y_continuous(n.breaks = 10) +
+  scale_y_continuous(n.breaks = 15, limits = c(1, 30)) +
   theme_publish() +
   labs(
     subtitle = "min: 8.57 yr\nmax: 10.08 yr",
@@ -477,7 +477,7 @@ p7 <-
     linetype = "dashed") +
   geom_point(aes(x = Quintile, y = prevalence * 100, color = wave), size = 5) +
   scale_x_discrete(labels = new_x_axis_5) +
-  scale_y_continuous(n.breaks = 10) +
+  scale_y_continuous(n.breaks = 15, limits = c(1, 30)) +
   theme_publish() +
   labs(
     subtitle = "min: 10.09 yr\nmax: 11.53 yr",
@@ -504,7 +504,7 @@ p8 <-
     linetype = "dashed") +
   geom_point(aes(x = Quintile, y = prevalence * 100, color = wave), size = 5) +
   scale_x_discrete(labels = new_x_axis_5) +
-  scale_y_continuous(n.breaks = 10) +
+  scale_y_continuous(n.breaks = 15, limits = c(1, 30)) +
   theme_publish() +
   labs(
     subtitle = "min: 11.54 yr\nmax: 14.33 yr",
