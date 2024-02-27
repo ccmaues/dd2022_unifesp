@@ -8,10 +8,10 @@ loadfonts()
 
 # check system
 if (Sys.info()["sysname"] == "Linux") {
-  path <- "/media/santorolab/C207-3566"
+  Path <- "/media/santorolab/C207-3566"
   font <- "Ubuntu Condensed"
 } else {
-  path <- "D:"
+  Path <- "D:"
   font <- "Arial Narrow"
 }
 
@@ -156,3 +156,86 @@ p2 <- ggplot(for_plot2, aes(x = Quintile)) +
   theme(legend.position = "bottom")
 
 p1 / p2
+
+p3 <- ggplot(for_plot1, aes(x = Decil)) +
+  geom_line(
+    aes(
+    x = Decil,
+    y = prevalence * 100,
+    color = wave,
+    group = wave),
+  linewidth = 2,
+  linetype = "dashed") +
+  geom_point(
+    aes(
+      x = Decil,
+      y = prevalence * 100,
+      color = wave),
+      size = 6) +
+  scale_x_discrete(labels = new_x_axis_10) +
+  scale_y_continuous(n.breaks = 10) +
+  theme_publish() +
+  labs(
+    title = glue("BHRC ADHD prevalence data\nN = {nrow(data_adhd)}"),
+    y = "Prevalence %",
+    x = "PRS Decile",
+    caption = "27-02-2024_cass_BHRC_PrevByWaveADHD_plot.R") +
+  theme(
+    text = element_text(family = font),
+    legend.position = "bottom",
+    plot.background = element_rect(fill = "#ffffff"),
+    axis.title = element_text(face = "bold", size = 15),
+    axis.text = element_text(face = "bold", size = 15),
+    legend.title = element_blank(),
+    legend.text = element_text(face = "italic", size = 15)
+  )
+
+ggsave(
+  "27-02-2024_cass_BHRC_PrevByWaveDecileADHD.png",
+  path = glue("{Path}/plots_R/"),
+  device = "png",
+  height = 15,
+  width = 30,
+  units = "cm")
+
+
+p4 <- ggplot(for_plot2, aes(x = Quintile)) +
+  geom_line(
+    aes(
+    x = Quintile,
+    y = prevalence * 100,
+    color = wave,
+    group = wave),
+  linewidth = 2,
+  linetype = "dashed") +
+  geom_point(
+    aes(
+      x = Quintile,
+      y = prevalence * 100,
+      color = wave),
+      size = 6) +
+  scale_x_discrete(labels = new_x_axis_5) +
+  scale_y_continuous(n.breaks = 10) +
+  theme_publish() +
+  labs(
+    title = glue("BHRC ADHD prevalence data\nN = {nrow(data_adhd)}"),
+    y = "Prevalence %",
+    x = "PRS Quintile",
+    caption = "27-02-2024_cass_BHRC_PrevByWaveADHD_plot.R") +
+  theme(
+    text = element_text(family = font),
+    legend.position = "bottom",
+    plot.background = element_rect(fill = "#ffffff"),
+    axis.title = element_text(face = "bold", size = 15),
+    axis.text = element_text(face = "bold", size = 15),
+    legend.title = element_blank(),
+    legend.text = element_text(face = "italic", size = 15)
+  )
+
+ggsave(
+  "27-02-2024_cass_BHRC_PrevByWaveQuintileADHD.png",
+  path = glue("{Path}/plots_R/"),
+  device = "png",
+  height = 15,
+  width = 30,
+  units = "cm")
