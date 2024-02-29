@@ -10,14 +10,33 @@ if (Sys.info()["sysname"] == "Linux") {
   path <- "D:"
 }
 
-phenotypes <- readRDS(glue("{path}/objects_R/cass_BHRC_phenotype.RDS")) %>%
+# dcanyanx_pgc = panic/ago, GAD, SoPh, and Spph
+# dcpanic/dcagor, dcgena, dcsoph, and dcspph
+
+phenos <-
+  readRDS(glue("{path}/objects_R/cass_BHRC_phenotype.RDS")) %>%
   select(
-    IID, wave, dcanyhk, dceat, dcanyanx,
-    dcpdd, dcmania, dcany, dcmadep,
-    dcocd, dcptsd, dcpsych, dctic
+    IID, wave, dcanyhk, dceat, dcpdd,
+    dcmania, dcmadep, dcocd, dcptsd,
+    dcpsych, dctic, dcpanic, dcagor,
+    dcgena, dcsoph, dcspph
   )
-##  nota: sem variável de AD (alzheimer) dcanyanx_pgc
-head(phenotypes)
+
+# pre-process the PGC variable (make as one) for
+# everdisorder processing
+pgc_processing <-
+  select(phenos, dcpanic, dcagor, dcgena, dcsoph, dcspph) %>%
+  mutate(dcanyanx_pgc = rowSums(., na.rm = FALSE)) %>%
+  select(dcanyanx_pgc)
+
+# get it toguether for processing
+phenotypes <-
+  select(phenos, IID, wave, dcanyhk,
+  dceat, dcpdd, dcmania, dcmadep,
+  dcocd, dcptsd, dcpsych, dctic) %>%
+  bind_cols(., pgc_processing)
+
+##  note: no variable for AD (alzheimer)
 
 ## For each phenotype in the data, let's do...
 ## prepare the data for processing (i.e. separate
@@ -123,7 +142,36 @@ for (name_column in colnames(phenotypes)[3:ncol(phenotypes)]) {
   processed_data[[name_column]] <- rbind(df_new, true_controls[[name_column]])
 }
 
+# Make dcany from new data
+final_processing <-
+  purrr::imap(processed_data, function(data, name){
+  data %>%
+    tidyr::pivot_longer(
+      cols = starts_with("W"),
+      names_to = "wave",
+      values_to = name)
+})
+
+# To save the IIDs sequence
+f1 <-
+  Reduce(function(x, y) inner_join(x, y, by = c("IID", "wave")), final_processing)
+
+# Get the new column to the old data.frame
+final_data <-
+  select(f1, -IID, -wave) %>%
+  mutate(dcany = rowSums(.)) %>%
+  select(dcany) %>%
+  bind_cols(., f1) %>%
+  mutate(
+    dcany = case_when(
+      dcany != 0 ~ 2,
+      dcany == 0 ~ 0)) %>%
+  select(
+    IID, wave, dcany, dcanyhk, dceat,
+    dcpdd, dcmania, dcmadep, dcocd,
+    dcptsd, dcpsych, dctic, dcanyanx_pgc)
+
 saveRDS(
-  processed_data,
-  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_All_phenotypes_26-02-2024.RD.RDS")
+  final_data,
+  glue("{path}/objects_R/cass_BHRC_modOnlyInCases_All_phenotypes_29-02-2024.RD.RDS")
 )
