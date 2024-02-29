@@ -17,17 +17,17 @@ if (Sys.info()["sysname"] == "Linux") {
 
 # Data for models ajustment and plot
 pheno <-
-	readRDS(glue("{path}/objects_R/cass_BHRC_Mod_All_Phenotypes_26-02-2024.RDS"))$dcanyhk
+	readRDS(glue("{Path}/objects_R/cass_BHRC_Mod_All_Phenotypes_26-02-2024.RDS"))$dcanyhk
 ages <-
-	readRDS(glue("{path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %>%
+	readRDS(glue("{Path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %>%
   rename(age_W0 = W0, age_W1 = W1, age_W2 = W2)
 prs <-
-	data.table::fread(glue("{path}/PRS_database/Final_Scores_PRSCS/PRSCS_ADHD_Score.profile")) %>%
+	data.table::fread(glue("{Path}/PRS_database/Final_Scores_PRSCS/PRSCS_ADHD_Score.profile")) %>%
   select(IID, PRSCS_zscore) %>%
   rename(prs = PRSCS_zscore)
-state <- readRDS(glue("{path}/objects_R/cass_BHRC_STATE.RDS"))
-sex <- readRDS(glue("{path}/objects_R/cass_BHRC_sex.RDS"))
-pc <- readRDS(glue("{path}/objects_R/cass_BHRC_PC20.RDS"))
+state <- readRDS(glue("{Path}/objects_R/cass_BHRC_STATE.RDS"))
+sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
+pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
 
 # Model ajustment
 var_for_ajustment <- plyr::join_all(
