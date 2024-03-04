@@ -72,7 +72,7 @@ ggplot(for_plot,
     label = Conversion)) +
   geom_point(size = 6, alpha = 0.5) +
   labs(
-    Title = glue("BHRC ADHD PCA data by quintile and sex - N = {nrow(for_plot)}"),
+    title = glue("BHRC ADHD PCA data by quintile and sex (N = {nrow(for_plot)})"),
     subtitle = "PRS adjusted to sex, state, age (in all waves), and 20 first PCs",
     caption = "04-03-2024_cass_BHRC_QuintileADHDInvestigation.R"
   ) +
@@ -81,30 +81,28 @@ ggplot(for_plot,
   scale_color_manual(values = c("1st" = "#6dc26d", "2nd" = "#009dff", "3rd" = "#b44545", "4th" = "orange", "5th" = "#7d45a0")) +
   theme_publish() +
   theme(
-    # text = element_text(family = font),
-    # axis.title = element_text(size = 20),
-    # axis.text.y = element_blank(),
-    # axis.text.x = element_blank(),
-    # axis.ticks = element_blank(),
-    # legend.title = element_text(size = 20),
-    # legend.text = element_text(size = 20),
-    # plot.caption = element_text(size = 20),
-    # plot.title = element_text(size = 25, vjust = 0.5),
-    # plot.subtitle = element_text(size = 20)
+    text = element_text(family = font),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 20),
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 20),
+    plot.caption = element_text(size = 20),
+    plot.subtitle = element_text(size = 20),
+    plot.title = element_text(size = 30)
 )
 
-# PCA Quintile
+# PCA Decile
 ggplot(for_plot,
   aes(PC1, PC2,
-    color = Quintiles,
-    shape = Sex,
-    fill = Quintiles,
+    color = Deciles,
+    shape = sex,
+    fill = Deciles,
     label = Conversion)) +
   geom_point(size = 6, alpha = 0.5) +
   labs(
-    title = "BHRC data PCA of quintiles (ADHD)",
-    subtitle = glue("N = {nrow(for_plot)}"),
-    caption = "28-02-2024_cass_BHRC_QuintileADHDInvestigation.R"
+    title = glue("BHRC ADHD PCA data by decile and sex (N = {nrow(for_plot)})"),
+    subtitle = "PRS adjusted to sex, state, age (in all waves), and 20 first PCs",
+    caption = "04-03-2024_cass_BHRC_QuintileADHDInvestigation.R"
   ) +
   scale_shape_manual(values = c("Female" = 24, "Male" = 22)) +
   scale_color_manual(
@@ -123,15 +121,13 @@ ggplot(for_plot,
   theme_publish() +
   theme(
     text = element_text(family = font),
+    axis.text = element_text(size = 15),
     axis.title = element_text(size = 20),
-    axis.text.y = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks = element_blank(),
     legend.title = element_text(size = 20),
     legend.text = element_text(size = 20),
     plot.caption = element_text(size = 20),
-    plot.title = element_text(size = 25),
-    plot.subtitle = element_text(size = 20))
+    plot.subtitle = element_text(size = 20),
+    plot.title = element_text(size = 30))
 
 # Quintiles composition
 ggthemr("fresh")
@@ -154,8 +150,8 @@ p1 <- for_plot %>%
     fontface = "italic") +
     theme_minimal() +
   labs(
-    title = "BHRC ADHD Quintiles composition",
-    subtitle = glue("N = {nrow(for_plot)}")) +
+    title = glue("BHRC ADHD Quintiles composition (N = {nrow(for_plot)})"),
+    subtitle = "PRS adjusted to sex, state, age (in all waves), and 20 first PCs") +
   theme(
     text = element_text(family = font, color = "black"),
     axis.title.x = element_blank(),
@@ -169,16 +165,16 @@ p1 <- for_plot %>%
     legend.text = element_text(size = 20),
     legend.title = element_blank(),
     plot.title = element_text(size = 30, face = "bold"),
-    plot.subtitle = element_text(size = 30),
+    plot.subtitle = element_text(size = 20),
     plot.caption = element_text(size = 20, hjust = 0.5, vjust = 2))
 
 # Sex
 p2 <- for_plot %>%
-  group_by(Sex, Quintiles) %>%
+  group_by(sex, Quintiles) %>%
   summarise(N = n()) %>%
   group_by(Quintiles) %>%
   mutate(Proportion = N / sum(N)) %>%
-  ggplot(aes(Quintiles, Proportion, fill = Sex)) +
+  ggplot(aes(Quintiles, Proportion, fill = sex)) +
   geom_bar(
     position = "fill",
     stat = "identity",
@@ -223,8 +219,8 @@ p3 <- for_plot %>%
     position = position_fill(vjust = 0.5),
     size = 7,
     fontface = "italic") +
-  scale_fill_manual(values = c("São Paulo" = "#699b7f", "Rio Grande do Sul" = "#994e6d")) +
-  labs(caption = "28-02-2024_cass_BHRC_QuintileADHDInvestigation.R") +
+  scale_fill_manual(values = c("BRA_SP" = "#699b7f", "BRA_RS" = "#994e6d")) +
+  labs(caption = "04-03-2024_cass_BHRC_QuintileADHDInvestigation.R") +
     theme_minimal() +
   theme(
     text = element_text(family = font, color = "black"),
