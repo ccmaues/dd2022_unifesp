@@ -30,12 +30,13 @@ pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
 adjust_model <- function(data_list) {
   # data must contain the dfs with
   # variables adjustment
-  plyr::join_all(
-    data_list,
-    by = "IID",
-    type = "inner"
-   )
-  new_PRS <- glm(PRS_child ~ sex:PC20, data = var_for_ajustment[, -"IID"])
+  var_for_ajustment <-
+    plyr::join_all(
+      data_list,
+      by = "IID",
+      type = "inner"
+    )
+  new_PRS <- glm(PRS ~ sex:PC20, data = var_for_ajustment)
   return(new_PRS)
 }
 
