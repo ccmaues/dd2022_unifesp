@@ -25,6 +25,7 @@ ages <-	readRDS(glue("{Path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %
 state <- readRDS(glue("{Path}/objects_R/cass_BHRC_STATE.RDS"))
 sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
 pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
+prs <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
 
 # PRS value adjustment
 adjust_model <- function(data_list) {
@@ -36,7 +37,12 @@ adjust_model <- function(data_list) {
       by = "IID",
       type = "inner"
     )
-  new_PRS <- glm(PRS ~ sex:PC20, data = var_for_ajustment)
+  # The + indicates multiple predictors
+  new_PRS <-
+    glm(PRS ~ sex + age_W0 + age_W1 + age_W2 +
+    popID + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
+    PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 +
+    PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20, data = var_for_ajustment)
   return(new_PRS)
 }
 
