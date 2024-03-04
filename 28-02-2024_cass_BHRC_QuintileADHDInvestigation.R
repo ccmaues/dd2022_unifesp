@@ -1,134 +1,97 @@
-pacman::p_load(
-  glue, dplyr, ggplot2, remotes,
-  envalysis, extrafont, glue, ggthemr
-)
+source("functions_to_source.R")
 
-#font_import()
-loadfonts()
+# Phenotype ADHD
+pADHD <-
+  pheno %>%
+  select(IID, wave, dcanyhk) %>%
+  pivot_wider(
+    names_from = wave,
+    values_from = dcanyhk)
 
-# check system
-if (Sys.info()["sysname"] == "Linux") {
-  Path <- "/media/santorolab/C207-3566"
-  font <- "Ubuntu Condensed"
-} else {
-  Path <- "D:"
-  font <- "Arial Narrow"
-}
+# Values ADHD
+vADHD <-
+  prs %>%
+  select(IID, ADHD) %>%
+  rename(PRS = ADHD)
 
-# Data for models ajustment and plot
-pheno <-
-	readRDS(glue("{Path}/objects_R/cass_BHRC_Mod_All_Phenotypes_26-02-2024.RDS"))$dcanyhk
-ages <-
-	readRDS(glue("{Path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %>%
-  rename(age_W0 = W0, age_W1 = W1, age_W2 = W2)
-prs <-
-	data.table::fread(glue("{Path}/PRS_database/Final_Scores_PRSCS/PRSCS_ADHD_Score.profile")) %>%
-  select(IID, PRSCS_zscore) %>%
-  rename(prs = PRSCS_zscore)
-state <- readRDS(glue("{Path}/objects_R/cass_BHRC_STATE.RDS"))
-sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
-pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
+# Covariables for regression correction
+cADHD <-
+  plyr::join_all(
+    list(sex, ages, state, pc),
+    by = "IID",
+    type = "inner"
+  )
 
-# Model ajustment
-var_for_ajustment <- plyr::join_all(
-  list(prs, sex, state, pc),
+# data from ADHD
+dADHD <-
+  plyr::join_all(
+  list(pADHD, vADHD, cADHD),
   by = "IID",
   type = "inner"
 )
-new_values <- glm(prs ~ sex:PC20, data = var_for_ajustment)
 
-new_prs <- data.frame(
-  IID = var_for_ajustment$IID,
-  prs = new_values$residuals
-)
 
-data_adhd <- plyr::join_all(
-  list(new_prs, pheno, ages, state, sex, pc), type = "inner", by = "IID"
-)
-
-data_adhd$ADHD_Quintile <- ntile(data_adhd$prs, 5)
-
-# Quintile: 3th and 4th
+# Quintiles
 for_plot <-
-  data_adhd %>%
+  dADHD %>%
   mutate(
-    color_deciles = case_when(
-    ADHD_Quintile == 3 ~ "3rd",
-    ADHD_Quintile == 4 ~ "4th",
-    .default = "Other"),
-  Conversion = case_when(
-    W0 == 0 & W1 == 0 & W2 == 0 ~ "none",
+    Deciles = ntile(PRS, 10),
+    Deciles = case_when(
+    Deciles == 1 ~ "1st",
+    Deciles == 2 ~ "2nd",
+    Deciles == 3 ~ "3rd",
+    Deciles == 4 ~ "4th",
+    Deciles == 5 ~ "5th",
+    Deciles == 6 ~ "6rd",
+    Deciles == 7 ~ "7th",
+    Deciles == 8 ~ "8th",
+    Deciles == 9 ~ "9th",
+    Deciles == 10 ~ "10th"
+    ),
+    Quintiles = ntile(PRS, 5),
+    Quintiles = case_when(
+    Quintiles == 1 ~ "1st",
+    Quintiles == 2 ~ "2nd",
+    Quintiles == 3 ~ "3rd",
+    Quintiles == 4 ~ "4th",
+    Quintiles == 5 ~ "5th"
+    ),
+    Conversion = case_when(
+    W0 == 0 & W1 == 0 & W2 == 0 ~ "control",
     W0 == 0 & W1 == 0 & W2 == 2 ~ "in W2",
     W0 == 0 & W1 == 2 ~ "in W1",
-    W0 == 2 ~ "in W0"),
-  dentro = ifelse(
-    PC1 > -0.04 &
-    PC2 > -0.06, TRUE, FALSE)) %>%
-  filter(ADHD_Quintile == 3 | ADHD_Quintile == 4) %>%
-  rename(Sex = sex, Quintiles = color_deciles)
+    W0 == 2 ~ "in W0")) %>%
+  select(sex, popID, Conversion, Deciles, Quintiles, PC1, PC2)
 
 # PCA Quintile
 ggplot(for_plot,
   aes(PC1, PC2,
     color = Quintiles,
-    shape = Sex,
+    shape = sex,
     fill = Quintiles,
     label = Conversion)) +
   geom_point(size = 6, alpha = 0.5) +
-  geom_text(
-    aes(label = ifelse(!dentro, as.character(Conversion), '')),
-    hjust = 1.3,
-    vjust = 0,
-    size = 5,
-    show.legend = FALSE
-    ) +
   labs(
-    title = "BHRC data PCA of 3rd and 4th quintiles (ADHD)",
-    subtitle = glue("N = {nrow(for_plot)}"),
-    caption = "28-02-2024_cass_BHRC_QuintileADHDInvestigation.R"
+    Title = glue("BHRC ADHD PCA data by quintile and sex - N = {nrow(for_plot)}"),
+    subtitle = "PRS adjusted to sex, state, age (in all waves), and 20 first PCs",
+    caption = "04-03-2024_cass_BHRC_QuintileADHDInvestigation.R"
   ) +
   scale_shape_manual(values = c("Female" = 24, "Male" = 22)) +
-  scale_color_manual(values = c("3rd" = "#387cb4", "4th" = "#ff9100", "other" = "#ececec")) +
-  scale_fill_manual(values = c("3rd" = "#387cb4", "4th" = "#ff9100", "other" = "#ececec")) +
+  scale_fill_manual(values = c("1st" = "#6dc26d", "2nd" = "#009dff", "3rd" = "#b44545", "4th" = "orange", "5th" = "#7d45a0")) +
+  scale_color_manual(values = c("1st" = "#6dc26d", "2nd" = "#009dff", "3rd" = "#b44545", "4th" = "orange", "5th" = "#7d45a0")) +
   theme_publish() +
   theme(
-    text = element_text(family = font),
-    axis.title = element_text(size = 20),
-    axis.text.y = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks = element_blank(),
-    legend.title = element_text(size = 20),
-    legend.text = element_text(size = 20),
-    plot.caption = element_text(size = 20),
-    plot.title = element_text(size = 25),
-    plot.subtitle = element_text(size = 20)
+    # text = element_text(family = font),
+    # axis.title = element_text(size = 20),
+    # axis.text.y = element_blank(),
+    # axis.text.x = element_blank(),
+    # axis.ticks = element_blank(),
+    # legend.title = element_text(size = 20),
+    # legend.text = element_text(size = 20),
+    # plot.caption = element_text(size = 20),
+    # plot.title = element_text(size = 25, vjust = 0.5),
+    # plot.subtitle = element_text(size = 20)
 )
-
-# All deciles
-for_plot <-
-  data_adhd %>%
-  mutate(
-    color_deciles = case_when(
-      ADHD_Quintile == 1 ~ "1st",
-      ADHD_Quintile == 2 ~ "2nd",
-      ADHD_Quintile == 3 ~ "3th",
-      ADHD_Quintile == 4 ~ "4th",
-      ADHD_Quintile == 5 ~ "5th"),
-    popID = case_when(
-      popID == "BRA_SP" ~ "São Paulo",
-      popID == "BRA_RS" ~ "Rio Grande do Sul",
-    ),
-  Conversion = case_when(
-    W0 == 0 & W1 == 0 & W2 == 0 ~ "none",
-    W0 == 0 & W1 == 0 & W2 == 2 ~ "in W2",
-    W0 == 0 & W1 == 2 ~ "in W1",
-    W0 == 2 ~ "in W0")) %>%
-  rename(Sex = sex, Quintiles = color_deciles)
-for_plot$Quintiles <-
-  factor(
-    for_plot$Quintiles,
-    levels = c(
-      "1st", "2nd", "3th", "4th", "5th"))
 
 # PCA Quintile
 ggplot(for_plot,
