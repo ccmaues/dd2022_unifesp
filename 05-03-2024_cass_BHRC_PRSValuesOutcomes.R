@@ -256,7 +256,8 @@ get_test <- function (data) {
   data.frame(
     assoc = cor(data$PRS, data$pheno),
     betas = coef(dftest)[2],
-    p_values = summary(dftest)$coefficients[2, 4])
+    p_values = summary(dftest)$coefficients[2, 4],
+    se = se(data$PRS))
   return(test)
 }
 
@@ -293,21 +294,144 @@ finaldf <-
   )
 rownames(finaldf) <- NULL
 head(finaldf)
+
+geom_signif(comparisons = list(c("versicolor", "virginica")), 
+              map_signif_level=TRUE)
 # make bar plot with betas
 finaldf %>%
   filter(wave == "W0") %>%
-  ggplot(aes(code, betas)) +
-    geom_col() +
-    coord_flip()
+  mutate(
+    conf_lower = betas - qt(0.975, df = 1363 - 1) * se,
+    conf_upper = betas + qt(0.975, df = 1363 - 1) * se,
+    tag = case_when(
+      p_values <= 0.005 ~ "*",
+      p_values <= 0.0005 ~ "**",
+      p_values <= 0.00005 ~ "***",
+      p_values <= 0.000005 ~ "****",
+      .default = ""
+    )) %>%
+  ggplot(aes(code, betas, fill = code)) +
+    geom_errorbar(
+      aes(ymin = conf_lower,
+      ymax = conf_upper),
+      width = 0.3,
+      color = "black",
+      size = 1.2,
+      position = position_dodge(width = 0.9)) +
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_text(
+      aes(label = tag),
+      vjust = -0.5,
+      hjust = -3,
+      position = position_dodge(width = 0.9),
+      size = 20) +
+    labs(
+      title = "BHRC association test PRS diagnosis - W0",
+      subtitle = "Linear Model with PRS adjusted (sex, age, state, 20PCs)",
+      caption = "05-02-2024_cass_BHRC_PRSValuesOutcomes.R"
+    ) +
+    coord_flip() +
+    theme_publish() +
+    theme(
+      text = element_text(family = font),
+      plot.title = element_text(size = 30),
+      plot.subtitle = element_text(size = 25),
+      plot.caption = element_text(size = 20, hjust = 0.5),
+      axis.text.y = element_text(size = 20, face = "bold"),
+      axis.text.x = element_text(size = 20),
+      legend.position = "none",
+      axis.title.x = element_text(size = 20, face = "bold"),
+      axis.title.y = element_blank()
+    )
 
 finaldf %>%
   filter(wave == "W1") %>%
-  ggplot(aes(code, betas)) +
-    geom_col() +
-    coord_flip()
+  mutate(
+    conf_lower = betas - qt(0.975, df = 1363 - 1) * se,
+    conf_upper = betas + qt(0.975, df = 1363 - 1) * se,
+    tag = case_when(
+      p_values <= 0.005 ~ "*",
+      p_values <= 0.0005 ~ "**",
+      p_values <= 0.00005 ~ "***",
+      p_values <= 0.000005 ~ "****",
+      .default = ""
+    )) %>%
+  ggplot(aes(code, betas, fill = code)) +
+    geom_errorbar(
+      aes(ymin = conf_lower,
+      ymax = conf_upper),
+      width = 0.3,
+      color = "black",
+      size = 1.2,
+      position = position_dodge(width = 0.9)) +
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_text(
+      aes(label = tag),
+      vjust = 0.7,
+      hjust = 3.3,
+      position = position_dodge(width = 0.9),
+      size = 20) +
+    labs(
+      title = "BHRC association test PRS diagnosis - W1",
+      subtitle = "Linear Model with PRS adjusted (sex, age, state, 20PCs)",
+      caption = "05-02-2024_cass_BHRC_PRSValuesOutcomes.R"
+    ) +
+    coord_flip() +
+    theme_publish() +
+    theme(
+      text = element_text(family = font),
+      plot.title = element_text(size = 30),
+      plot.subtitle = element_text(size = 25),
+      plot.caption = element_text(size = 20, hjust = 0.5),
+      axis.text.y = element_text(size = 20, face = "bold"),
+      axis.text.x = element_text(size = 20),
+      legend.position = "none",
+      axis.title.x = element_text(size = 20, face = "bold"),
+      axis.title.y = element_blank()
+    )
 
 finaldf %>%
   filter(wave == "W2") %>%
-  ggplot(aes(code, betas)) +
-    geom_col() +
-    coord_flip()
+  mutate(
+    conf_lower = betas - qt(0.975, df = 1363 - 1) * se,
+    conf_upper = betas + qt(0.975, df = 1363 - 1) * se,
+    tag = case_when(
+      p_values <= 0.005 ~ "*",
+      p_values <= 0.0005 ~ "**",
+      p_values <= 0.00005 ~ "***",
+      p_values <= 0.000005 ~ "****",
+      .default = ""
+    )) %>%
+  ggplot(aes(code, betas, fill = code)) +
+    geom_errorbar(
+      aes(ymin = conf_lower,
+      ymax = conf_upper),
+      width = 0.3,
+      color = "black",
+      size = 1.2,
+      position = position_dodge(width = 0.9)) +
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_text(
+      aes(label = tag),
+      vjust = 0.7,
+      hjust = 3.3,
+      position = position_dodge(width = 0.9),
+      size = 20) +
+    labs(
+      title = "BHRC association test PRS diagnosis - W2",
+      subtitle = "Linear Model with PRS adjusted (sex, age, state, 20PCs)",
+      caption = "05-02-2024_cass_BHRC_PRSValuesOutcomes.R"
+    ) +
+    coord_flip() +
+    theme_publish() +
+    theme(
+      text = element_text(family = font),
+      plot.title = element_text(size = 30),
+      plot.subtitle = element_text(size = 25),
+      plot.caption = element_text(size = 20, hjust = 0.5),
+      axis.text.y = element_text(size = 20, face = "bold"),
+      axis.text.x = element_text(size = 20),
+      legend.position = "none",
+      axis.title.x = element_text(size = 20, face = "bold"),
+      axis.title.y = element_blank()
+    )
