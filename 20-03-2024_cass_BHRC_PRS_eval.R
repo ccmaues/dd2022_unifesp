@@ -80,9 +80,10 @@ evaluate_PRS <-
     )
     print(p1)
     ## Calculate R2
-    R2 <- as.data.frame(do.call(bind_rows, lapply(processing, function(df){
+    R2 <- do.call(bind_rows, lapply(processing, function(df){
       PseudoR2(glm(PRS ~ diagnosis, data = df), which = "Nagelkerke") * 100
-    }))) %>%
+    })) %>%
+    as.data.frame() %>%
     bind_cols(
       data.frame(
         c(roc_results$W0$auc*100,
