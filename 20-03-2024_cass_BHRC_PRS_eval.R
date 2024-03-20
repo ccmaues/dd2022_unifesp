@@ -8,19 +8,22 @@ library(DescTools)
 
 evaluate_PRS <-
   function(prs_column, pheno_code) {
+    ## Main data
     data <-
       prs %>%
       select(IID, {{prs_column}}) %>%
       inner_join(., select(pheno, IID, wave, {{pheno_code}}), by = "IID") %>%
       rename(PRS = 2, diagnosis = 4) %>%
       select(-IID)
-    roc_processing <- group_split(data, wave)
-    roc_results <- lapply(roc_processing, function(data) {
+    processing <- group_split(data, wave)
+
+    ## Calculate ROC
+    roc_results <- lapply(processing, function(data) {
       gROC(data$PRS, data$diagnosis, pvac.auc = TRUE, side = "auto")
     })
     names(roc_results) <- c("W0", "W1", "W2")
     ggthemr("fresh")
-    rbind(
+    p1 <- rbind(
       data.frame(
         FPR = roc_results$W0$points.coordinates[, "FPR"],
         TPR = roc_results$W0$points.coordinates[, "TPR"],
@@ -75,5 +78,21 @@ evaluate_PRS <-
       legend.text = element_text(size = 20),
       legend.title = element_blank()
     )
+    print(p1)
+    ## Calculate R2
+    R2 <- as.data.frame(do.call(bind_rows, lapply(processing, function(df){
+      PseudoR2(glm(PRS ~ diagnosis, data = df), which = "Nagelkerke") * 100
+    }))) %>%
+    bind_cols(
+      data.frame(
+        c(roc_results$W0$auc*100,
+        roc_results$W1$auc*100,
+        roc_results$W2$auc*100)
+      )
+    )
+    rownames(R2) <- c("W0", "W1", "W2")
+    colnames(R2) <- c("Nagelkerke", "AUROC")
+    print(R2)
+    # poderia juntar os AUC no mesmo DF do R2
 }
 evaluate_PRS("ADHD", "dcanyhk")
