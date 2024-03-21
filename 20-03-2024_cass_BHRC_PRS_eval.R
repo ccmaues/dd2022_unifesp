@@ -1,11 +1,12 @@
 source("functions_to_source.R")
 
-## tentar colocar em paralelo
 ## Load necessary libraries
 # nsROC
 library(nsROC)
 # R2
 library(DescTools)
+# PR Curve
+library(PRROC)
 
 evaluate_PRS <-
   function(prs_column, pheno_code) {
@@ -25,8 +26,6 @@ evaluate_PRS <-
     names(roc_results) <- c("W0", "W1", "W2")
     ggthemr("fresh")
 
-    # verificar se tá mesmo colocando os dados de W1 aqui
-    # pq não parece
     p1 <- rbind(
       data.frame(
         FPR = roc_results$W0$points.coordinates[, "FPR"],
@@ -83,16 +82,16 @@ evaluate_PRS <-
       legend.title = element_blank()
     )
 
-    # poderia juntar os AUC no mesmo DF do R2
-    ## Calculate Precision-Recall Curves and AUC
-    # tirando do loop aqui tá fudendo o meu resultado
-    pr <- c()
+    ## Calculate Area Under Precision-Recall Curve
     pr_curve_df <- lapply(processing, function(data) {
       t <- pr.curve(
         scores.class0 = data$PRS,
         weights.class0 = ifelse(data$diagnosis == 0, 0, 1),
         curve = TRUE,
-        sorted = FALSE
+        sorted = FALSE,
+        max.compute = TRUE,
+        min.compute = TRUE,
+        rand.compute = TRUE
         )
       data.frame(Precision = t$curve[, 2], Recall = t$curve[, 1], AUPRC = t$auc.integral)
     })
@@ -111,9 +110,8 @@ evaluate_PRS <-
       Precision = pr_curve_df$W2$Precision,
       wave = "W2")
       ) %>%
-      ggplot(aes(x = Precision, y = Recall, color = wave)) +
-        geom_line() +
-        geom_point() +
+      ggplot(aes(x = Recall, y = Precision, color = wave)) +
+        geom_ribbon(aes(ymin = 0, ymax = Precision), alpha = 0.3) +
         labs(x = "Recall", y = "Precision", title = "Precision-Recall Curve") +
         theme(
         text = element_text(family = font),
@@ -134,19 +132,26 @@ evaluate_PRS <-
     bind_cols(
       data.frame(
         c(
-        roc_results$W0$auc*100,
-        roc_results$W1$auc*100,
-        roc_results$W2$auc*100
+        roc_results$W0$auc * 100,
+        roc_results$W1$auc * 100,
+        roc_results$W2$auc * 100
         ),
         c(
-        unique(pr_curve_df$W0$AUPRC*100),
-        unique(pr_curve_df$W1$AUPRC*100),
-        unique(pr_curve_df$W2$AUPRC*100)
+        unique(pr_curve_df$W0$AUPRC * 100),
+        unique(pr_curve_df$W1$AUPRC * 100),
+        unique(pr_curve_df$W2$AUPRC * 100)
         ))
       )
     colnames(R2) <- c("Nagelkerke", "AUROC", "AUPRC")
     rownames(R2) <- c("W0", "W1", "W2")
-  list(p1, p2, R2)
+  #list(p1, p2, R2)
+  p2
 }
-
+evaluate_PRS("ADHD", "dcanyhk")
 opt <- evaluate_PRS("ADHD", "dcanyhk")
+
+# AUPRC
+# the PR curve is preferred over the ROC curve for imbalanced data since the ROC can be misleading or uninformative”
+# alternative to the ROC curves when the data is highly skewed
+# Precision-Recall curves are appropriate for imbalanced datasets.
+# Calculate Precision-Recall Curves and AUC
