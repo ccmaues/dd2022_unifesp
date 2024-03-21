@@ -83,31 +83,18 @@ evaluate_PRS <-
       legend.title = element_blank()
     )
 
-    ## Calculate R2
-    R2 <- do.call(bind_rows, lapply(processing, function(df){
-      PseudoR2(glm(PRS ~ diagnosis, data = df), which = "Nagelkerke") * 100
-    })) %>%
-    as.data.frame() %>%
-    bind_cols(
-      data.frame(
-        c(
-        roc_results$W0$auc*100,
-        roc_results$W1$auc*100,
-        roc_results$W2$auc*100
-        )))
-    rownames(R2) <- c("W0", "W1", "W2")
-    colnames(R2) <- c("Nagelkerke", "AUROC")
-
     # poderia juntar os AUC no mesmo DF do R2
     ## Calculate Precision-Recall Curves and AUC
+    # tirando do loop aqui tá fudendo o meu resultado
+    pr <- c()
     pr_curve_df <- lapply(processing, function(data) {
-    t <- pr.curve(
-      scores.class0 = data$PRS,
-      weights.class0 = ifelse(data$diagnosis == 0, 0, 1),
-      curve = TRUE,
-      sorted = FALSE
-    )
-    data.frame(Recall = t$curve[, 3], Precision = t$curve[, 2])
+      t <- pr.curve(
+        scores.class0 = data$PRS,
+        weights.class0 = ifelse(data$diagnosis == 0, 0, 1),
+        curve = TRUE,
+        sorted = FALSE
+        )
+      data.frame(Precision = t$curve[, 2], Recall = t$curve[, 1], AUPRC = t$auc.integral)
     })
     names(pr_curve_df) <- c("W0", "W1", "W2")
     p2 <- rbind(
@@ -124,7 +111,7 @@ evaluate_PRS <-
       Precision = pr_curve_df$W2$Precision,
       wave = "W2")
       ) %>%
-      ggplot(aes(x = Recall, y = Precision, color = wave)) +
+      ggplot(aes(x = Precision, y = Recall, color = wave)) +
         geom_line() +
         geom_point() +
         labs(x = "Recall", y = "Precision", title = "Precision-Recall Curve") +
@@ -138,7 +125,28 @@ evaluate_PRS <-
         legend.text = element_text(size = 20),
         legend.title = element_blank()
     )
-    list(p1, p2, R2)
+
+    ## Calculate R2
+    R2 <- do.call(bind_rows, lapply(processing, function(df){
+      PseudoR2(glm(PRS ~ diagnosis, data = df), which = "Nagelkerke") * 100
+    })) %>%
+    as.data.frame() %>%
+    bind_cols(
+      data.frame(
+        c(
+        roc_results$W0$auc*100,
+        roc_results$W1$auc*100,
+        roc_results$W2$auc*100
+        ),
+        c(
+        unique(pr_curve_df$W0$AUPRC*100),
+        unique(pr_curve_df$W1$AUPRC*100),
+        unique(pr_curve_df$W2$AUPRC*100)
+        ))
+      )
+    colnames(R2) <- c("Nagelkerke", "AUROC", "AUPRC")
+    rownames(R2) <- c("W0", "W1", "W2")
+  list(p1, p2, R2)
 }
 
 opt <- evaluate_PRS("ADHD", "dcanyhk")
