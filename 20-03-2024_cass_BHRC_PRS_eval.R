@@ -40,14 +40,8 @@ evaluate_PRS <-
         TPR = roc_results$W2$points.coordinates[, "TPR"],
         wave = "W2")
     ) %>%
-    ggplot(aes(x = FPR, y = TPR)) +
-    geom_ribbon(
-      aes(
-        ymin = FPR,
-        ymax = TPR,
-        fill = wave)
-    ) +
-    geom_line(
+    ggplot(aes(x = FPR, y = TPR, color = wave)) +
+    geom_path(
       linewidth = 1
       ) +
     geom_abline(
@@ -111,8 +105,15 @@ evaluate_PRS <-
       wave = "W2")
       ) %>%
       ggplot(aes(x = Recall, y = Precision, color = wave)) +
-        geom_ribbon(aes(ymin = 0, ymax = Precision), alpha = 0.3) +
-        labs(x = "Recall", y = "Precision", title = "Precision-Recall Curve") +
+        geom_path(linewidth = 1) +
+        labs(
+          x = "Recall", y = "Precision",
+          title = glue("Precision-Recall Curve ADHD - N = {nrow(data)/3}"),
+          subtitle = glue("
+      W0 = {format(unique(pr_curve_df$W0$AUPRC)*100, digits = 4)}% W1 = {format(unique(pr_curve_df$W1$AUPRC)*100, digits = 4)}% W2 = {format(unique(pr_curve_df$W1$AUPRC)*100, digits = 4)}%
+      "),
+      caption = "20-03-2024_cass_BHRC_PRS_eval.R"
+    ) +
         theme(
         text = element_text(family = font),
         axis.title = element_text(size = 20, face = "bold"),
@@ -144,8 +145,7 @@ evaluate_PRS <-
       )
     colnames(R2) <- c("Nagelkerke", "AUROC", "AUPRC")
     rownames(R2) <- c("W0", "W1", "W2")
-  #list(p1, p2, R2)
-  p2
+  list(p1, p2, R2)
 }
 evaluate_PRS("ADHD", "dcanyhk")
 opt <- evaluate_PRS("ADHD", "dcanyhk")
