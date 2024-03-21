@@ -1,5 +1,6 @@
 source("functions_to_source.R")
 
+## tentar colocar em paralelo
 ## Load necessary libraries
 # nsROC
 library(nsROC)
@@ -23,6 +24,9 @@ evaluate_PRS <-
     })
     names(roc_results) <- c("W0", "W1", "W2")
     ggthemr("fresh")
+
+    # verificar se tá mesmo colocando os dados de W1 aqui
+    # pq não parece
     p1 <- rbind(
       data.frame(
         FPR = roc_results$W0$points.coordinates[, "FPR"],
@@ -78,7 +82,7 @@ evaluate_PRS <-
       legend.text = element_text(size = 20),
       legend.title = element_blank()
     )
-    print(p1)
+
     ## Calculate R2
     R2 <- do.call(bind_rows, lapply(processing, function(df){
       PseudoR2(glm(PRS ~ diagnosis, data = df), which = "Nagelkerke") * 100
@@ -86,14 +90,55 @@ evaluate_PRS <-
     as.data.frame() %>%
     bind_cols(
       data.frame(
-        c(roc_results$W0$auc*100,
+        c(
+        roc_results$W0$auc*100,
         roc_results$W1$auc*100,
-        roc_results$W2$auc*100)
-      )
-    )
+        roc_results$W2$auc*100
+        )))
     rownames(R2) <- c("W0", "W1", "W2")
     colnames(R2) <- c("Nagelkerke", "AUROC")
-    print(R2)
+
     # poderia juntar os AUC no mesmo DF do R2
+    ## Calculate Precision-Recall Curves and AUC
+    pr_curve_df <- lapply(processing, function(data) {
+    t <- pr.curve(
+      scores.class0 = data$PRS,
+      weights.class0 = ifelse(data$diagnosis == 0, 0, 1),
+      curve = TRUE,
+      sorted = FALSE
+    )
+    data.frame(Recall = t$curve[, 3], Precision = t$curve[, 2])
+    })
+    names(pr_curve_df) <- c("W0", "W1", "W2")
+    p2 <- rbind(
+      data.frame(
+      Recall = pr_curve_df$W0$Recall,
+      Precision = pr_curve_df$W0$Precision,
+      wave = "W0"),
+      data.frame(
+      Recall = pr_curve_df$W1$Recall,
+      Precision = pr_curve_df$W1$Precision,
+      wave = "W1"),
+      data.frame(
+      Recall = pr_curve_df$W2$Recall,
+      Precision = pr_curve_df$W2$Precision,
+      wave = "W2")
+      ) %>%
+      ggplot(aes(x = Recall, y = Precision, color = wave)) +
+        geom_line() +
+        geom_point() +
+        labs(x = "Recall", y = "Precision", title = "Precision-Recall Curve") +
+        theme(
+        text = element_text(family = font),
+        axis.title = element_text(size = 20, face = "bold"),
+        axis.text = element_text(size = 20),
+        plot.title = element_text(size = 30),
+        plot.subtitle = element_text(size = 25),
+        plot.caption = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        legend.title = element_blank()
+    )
+    list(p1, p2, R2)
 }
-evaluate_PRS("ADHD", "dcanyhk")
+
+opt <- evaluate_PRS("ADHD", "dcanyhk")
