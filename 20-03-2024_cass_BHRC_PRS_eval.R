@@ -77,35 +77,51 @@ evaluate_PRS <-
     )
 
     ## Calculate Area Under Precision-Recall Curve
+    baselines <- c() 
     pr_curve_df <- lapply(processing, function(data) {
+      score <- data$PRS
+      labels <- ifelse(data$diagnosis == 0, 0, 1)
       t <- pr.curve(
-        scores.class0 = data$PRS,
-        weights.class0 = ifelse(data$diagnosis == 0, 0, 1),
+        scores.class0 = score,
+        weights.class0 = labels,
         curve = TRUE,
         sorted = FALSE,
         max.compute = TRUE,
         min.compute = TRUE,
         rand.compute = TRUE
         )
+      baseline <- sum(labels) / length(labels)
+      baselines <<- c(baselines, baseline)
       data.frame(Precision = t$curve[, 2], Recall = t$curve[, 1], AUPRC = t$auc.integral)
     })
     names(pr_curve_df) <- c("W0", "W1", "W2")
     p2 <- rbind(
       data.frame(
-      Recall = pr_curve_df$W0$Recall,
-      Precision = pr_curve_df$W0$Precision,
-      wave = "W0"),
+        Recall = pr_curve_df$W0$Recall,
+        Precision = pr_curve_df$W0$Precision,
+        wave = "W0",
+        Baseline = baselines[1],
+        cor = "#65ADC2"
+      ),
       data.frame(
-      Recall = pr_curve_df$W1$Recall,
-      Precision = pr_curve_df$W1$Precision,
-      wave = "W1"),
+        Recall = pr_curve_df$W1$Recall,
+        Precision = pr_curve_df$W1$Precision,
+        wave = "W1",
+        Baseline = baselines[2],
+        cor = "#233B43"
+      ),
       data.frame(
-      Recall = pr_curve_df$W2$Recall,
-      Precision = pr_curve_df$W2$Precision,
-      wave = "W2")
-      ) %>%
-      ggplot(aes(x = Recall, y = Precision, color = wave)) +
+        Recall = pr_curve_df$W2$Recall,
+        Precision = pr_curve_df$W2$Precision,
+        wave = "W2",
+        Baseline = baselines[3],
+        cor = "#E84646"
+      )
+    ) %>%
+      ggplot(aes(x = Recall, y = Precision, color = cor)) +
         geom_path(linewidth = 1) +
+        geom_hline(aes(yintercept = Baseline, color = cor), linetype = "dashed") +
+        scale_color_discrete(name = "Wave", labels = c("W0", "W1", "W2")) +
         labs(
           x = "Recall", y = "Precision",
           title = glue("Precision-Recall Curve ADHD - N = {nrow(data)/3}"),
@@ -114,7 +130,7 @@ evaluate_PRS <-
       "),
       caption = "20-03-2024_cass_BHRC_PRS_eval.R"
     ) +
-        theme(
+      theme(
         text = element_text(family = font),
         axis.title = element_text(size = 20, face = "bold"),
         axis.text = element_text(size = 20),
@@ -151,7 +167,13 @@ evaluate_PRS("ADHD", "dcanyhk")
 opt <- evaluate_PRS("ADHD", "dcanyhk")
 
 # AUPRC
-# the PR curve is preferred over the ROC curve for imbalanced data since the ROC can be misleading or uninformative”
+# the PR curve is preferred over the ROC curve for imbalanced data since
+# the ROC can be misleading or uninformative”
 # alternative to the ROC curves when the data is highly skewed
 # Precision-Recall curves are appropriate for imbalanced datasets.
 # Calculate Precision-Recall Curves and AUC
+# Line represents a “baseline” classifier — this classifier would simply
+# predict that all instances belong to the positive class
+# The "baseline curve" in a PR curve plot is a horizontal line with height equal to 
+# he number of positive examples P  over the total number of training data N
+# ie. the proportion of positive examples in our data (P/N)
