@@ -25,7 +25,8 @@ ages <-	readRDS(glue("{Path}/objects_R/cass_BHRC_Age_Imputed_26-02-2024.RDS")) %
 state <- readRDS(glue("{Path}/objects_R/cass_BHRC_STATE.RDS"))
 sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
 pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
-prs <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
+prs_v1 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
+prs_v2 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS_minus_age.RDS"))
 
 # PRS value adjustment with all variables
 adjust_model <- function(data_list) {
