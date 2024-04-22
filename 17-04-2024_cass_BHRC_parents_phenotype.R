@@ -45,4 +45,4 @@ MDD = make_new_pheno(MDD), ANX = make_new_pheno(ANX),
 DEP = make_new_pheno(DEP), SCZ = make_new_pheno(SCZ),
 ADHD = make_new_pheno(ADHD))
 
-saveRDS(glue("{Path}/objects_R/cass_BHRC_parents_phenotype.RDS"))
+saveRDS(new_pheno, glue("{Path}/objects_R/cass_BHRC_parents_phenotype.RDS"))
