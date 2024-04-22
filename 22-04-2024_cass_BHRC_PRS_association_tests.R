@@ -58,8 +58,11 @@ wilcox.test(PRS ~ diagnosis, filter(data, wave == "W2"))
 wilcox_effsize(filter(data, wave == "W2"), PRS ~ diagnosis)
 
 ## Parent diagnosis association
-data_pt <- filter(parents, IID %in% data$IID)
-lm(PRS ~ pdiagnosis, parents_data)
+data_pt <-
+filter(parents, IID %in% data$IID) %>%
+inner_join(., vADHD, by = "IID")
+wilcox.test(PRS ~ ADHD, data_pt)
+wilcox_effsize(data_pt, PRS ~ ADHD)
 
 ### Age association
 # W0
