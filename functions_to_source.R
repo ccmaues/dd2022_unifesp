@@ -27,6 +27,7 @@ sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
 pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
 prs_v1 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
 prs_v2 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS_minus_age.RDS"))
+parents <- readRDS(glue("{Path}/objects_R/cass_BHRC_parents_phenotype.RDS"))
 
 # PRS value adjustment with all variables
 adjust_model <- function(data_list) {
