@@ -27,7 +27,7 @@ sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
 pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
 prs <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
 
-# PRS value adjustment
+# PRS value adjustment with all variables
 adjust_model <- function(data_list) {
   # data must contain the dfs with
   # variables adjustment
@@ -42,7 +42,29 @@ adjust_model <- function(data_list) {
     glm(PRS ~ sex + age_W0 + age_W1 + age_W2 +
     popID + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
     PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 +
-    PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20, data = var_for_ajustment)
+    PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20,
+    data = var_for_ajustment)
+  return(new_PRS)
+}
+
+
+# PRS value adjustment withou age
+adjust_model_v2 <- function(data_list) {
+  # data must contain the dfs with
+  # variables adjustment
+  var_for_ajustment <-
+    plyr::join_all(
+      data_list,
+      by = "IID",
+      type = "inner"
+    )
+  # The + indicates multiple predictors
+  new_PRS <-
+    glm(PRS ~ sex +
+    popID + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
+    PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 +
+    PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20,
+    data = var_for_ajustment)
   return(new_PRS)
 }
 
