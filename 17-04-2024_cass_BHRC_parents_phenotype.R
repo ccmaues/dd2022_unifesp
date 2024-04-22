@@ -43,6 +43,7 @@ new_pheno <-
 data.frame(BP$IID, BP = make_new_pheno(BP),
 MDD = make_new_pheno(MDD), ANX = make_new_pheno(ANX),
 DEP = make_new_pheno(DEP), SCZ = make_new_pheno(SCZ),
-ADHD = make_new_pheno(ADHD))
+ADHD = make_new_pheno(ADHD)) %>%
+rename(IID = 1)
 
 saveRDS(new_pheno, glue("{Path}/objects_R/cass_BHRC_parents_phenotype.RDS"))
