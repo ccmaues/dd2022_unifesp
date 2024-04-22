@@ -35,17 +35,27 @@ ks.test(unique(data$PRS), y)
 ### Teste de associação
 ## sexo
 wilcox.test(PRS ~ sex, non_redudant_data)
+library(rstatix)
+library(coin)
+wilcox_effsize(non_redudant_data, PRS ~ sex)
+
 ## estado
 wilcox.test(PRS ~ popID, non_redudant_data)
+wilcox_effsize(non_redudant_data, PRS ~ popID)
+
 ## diagnóstico (falta a força da associação)
 # All waves (do i put :age to see only the PRS and diagnosis association?)
-lm(PRS ~ diagnosis, data)
+wilcox.test(PRS ~ diagnosis, data)
+wilcox_effsize(data, PRS ~ diagnosis)
 # W0
-lm(PRS ~ diagnosis, filter(data, wave == "W0"))
+wilcox.test(PRS ~ diagnosis, filter(data, wave == "W0"))
+wilcox_effsize(filter(data, wave == "W0"), PRS ~ diagnosis)
 # W1
-lm(PRS ~ diagnosis, filter(data, wave == "W1"))
+wilcox.test(PRS ~ diagnosis, filter(data, wave == "W1"))
+wilcox_effsize(filter(data, wave == "W1"), PRS ~ diagnosis)
 # W2
-lm(PRS ~ diagnosis, filter(data, wave == "W2"))
+wilcox.test(PRS ~ diagnosis, filter(data, wave == "W2"))
+wilcox_effsize(filter(data, wave == "W2"), PRS ~ diagnosis)
 
 ## Parent diagnosis association
 data_pt <- filter(parents, IID %in% data$IID)
@@ -53,8 +63,8 @@ lm(PRS ~ pdiagnosis, parents_data)
 
 ### Age association
 # W0
-lm(PRS ~ age, filter(data, wave == "W0"))
+summary(lm(PRS ~ age, filter(data, wave == "W0")))$coefficients
 # W1
-lm(PRS ~ age, filter(data, wave == "W1"))
+summary(lm(PRS ~ age, filter(data, wave == "W1")))$coefficients
 # W2
-lm(PRS ~ age, filter(data, wave == "W2"))
+summary(lm(PRS ~ age, filter(data, wave == "W2")))$coefficients
