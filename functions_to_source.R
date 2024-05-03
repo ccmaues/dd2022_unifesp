@@ -16,7 +16,7 @@ if (Sys.info()["sysname"] == "Linux") {
   Path <- "/media/santorolab/C207-3566"
   font <- "Ubuntu Condensed"
 } else {
-  Path <- "D:"
+  Path <- "E:"
   font <- "Arial Narrow"
 }
 pheno <- readRDS(glue("{Path}/objects_R/cass_BHRC_Mod_All_Phenotypes_29-02-2024.RDS"))
@@ -27,6 +27,7 @@ sex <- readRDS(glue("{Path}/objects_R/cass_BHRC_sex.RDS"))
 pc <- readRDS(glue("{Path}/objects_R/cass_BHRC_PC20.RDS"))
 prs_v1 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS.RDS"))
 prs_v2 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS_minus_age.RDS"))
+prs_v3 <- readRDS(glue("{Path}/objects_R/cass_BHRC_PRS_minus_age_10PCs.RDS"))
 parents <- readRDS(glue("{Path}/objects_R/cass_BHRC_parents_phenotype.RDS"))
 
 # PRS value adjustment with all variables
@@ -66,6 +67,26 @@ adjust_model_v2 <- function(data_list) {
     popID + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
     PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 +
     PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20,
+    data = var_for_ajustment)
+  return(new_PRS)
+}
+
+
+# PRS value adjustment withou age and only 10 PCs
+adjust_model_v3 <- function(data_list) {
+  # data must contain the dfs with
+  # variables adjustment
+  var_for_ajustment <-
+    plyr::join_all(
+      data_list,
+      by = "IID",
+      type = "inner"
+    )
+  # The + indicates multiple predictors
+  new_PRS <-
+    glm(PRS ~ sex +
+    popID + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
+    PC7 + PC8 + PC9 + PC10,
     data = var_for_ajustment)
   return(new_PRS)
 }
